@@ -5,13 +5,6 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Play, CalendarDays, Headset } from 'lucide-react';
 
-const features = [
-  '24/7 AI Receptionists',
-  'Missed Call Recovery',
-  'Lead Reactivation & Appointment Setting',
-  'Enterprise analytics and voice agent control'
-];
-
 export default function HeroSection() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -56,13 +49,6 @@ export default function HeroSection() {
             </Link>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {features.map((feature) => (
-              <div key={feature} className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm text-foreground/80">{feature}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
         <motion.div
