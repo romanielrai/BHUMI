@@ -7,10 +7,10 @@ const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
 const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
 
 if (!twilioAccountSid || !twilioAuthToken) {
-  throw new Error('TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN must be defined');
+  console.warn('WARNING: TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are not defined. Voice calls will run in SIMULATION mode.');
 }
 
-const twilioClient = twilio(twilioAccountSid, twilioAuthToken);
+const twilioClient = twilioAccountSid && twilioAuthToken ? twilio(twilioAccountSid, twilioAuthToken) : null;
 
 router.post('/call', async (req, res) => {
   const { to, from, clientId, leadId } = req.body;
@@ -18,11 +18,20 @@ router.post('/call', async (req, res) => {
     return res.status(400).json({ error: 'Both to and from numbers are required' });
   }
 
-  const call = await twilioClient.calls.create({
-    url: process.env.TWILIO_CALLBACK_URL ?? 'http://demo.twilio.com/docs/voice.xml',
-    to,
-    from
-  });
+  let sid = 'mock-call-sid-' + Math.random().toString(36).substring(7);
+  let status = 'queued';
+
+  if (twilioClient) {
+    const call = await twilioClient.calls.create({
+      url: process.env.TWILIO_CALLBACK_URL ?? 'http://demo.twilio.com/docs/voice.xml',
+      to,
+      from
+    });
+    sid = call.sid;
+    status = call.status;
+  } else {
+    console.log(`[Twilio Mock] Simulating voice call from ${from} to ${to}`);
+  }
 
   await prisma.call.create({
     data: {
@@ -34,7 +43,7 @@ router.post('/call', async (req, res) => {
     }
   });
 
-  res.json({ sid: call.sid, status: call.status });
+  res.json({ sid, status });
 });
 
 export default router;

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type FormData = {
   email: string;
@@ -10,8 +11,16 @@ type FormData = {
 };
 
 export default function LoginPage() {
+  const router = useRouter();
   const [status, setStatus] = useState('');
   const { register, handleSubmit } = useForm<FormData>();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const onSubmit = async (data: FormData) => {
     setStatus('Logging in...');
@@ -22,7 +31,19 @@ export default function LoginPage() {
         body: JSON.stringify(data)
       });
       if (!response.ok) throw new Error('Invalid credentials');
+      const responseData = await response.json();
+      
+      if (responseData.token) {
+        localStorage.setItem('token', responseData.token);
+      }
+      if (responseData.user) {
+        localStorage.setItem('user', JSON.stringify(responseData.user));
+      }
+      
       setStatus('Login successful. Redirecting...');
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 800);
     } catch (error) {
       setStatus('Login failed. Please try again.');
     }

@@ -1,4 +1,5 @@
-import './styles/globals.css';
+import React from 'react';
+import '../styles/globals.css';
 import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 
@@ -10,8 +11,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-background text-foreground antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-background text-foreground antialiased" suppressHydrationWarning>
         <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(143,122,103,.18),_transparent_40%),linear-gradient(180deg,_#02061D_0%,_#050B24_100%)]">
           <Navbar />
           {children}

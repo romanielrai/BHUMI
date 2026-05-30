@@ -2,26 +2,27 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
-    './app/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}'
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
+    './styles/**/*.css',
   ],
   theme: {
     extend: {
       colors: {
         background: '#02061D',
         foreground: '#BDB6AC',
-        gold: '#8E7D69',
-        highlight: '#CFC7BA'
+        gold: '#CFC7BA',
       },
       boxShadow: {
-        glow: '0 25px 80px rgba(143,122,103,0.2)'
+        glow: '0 25px 80px rgba(143,122,103,0.2)',
       },
-      backgroundImage: {
-        glass: 'linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))'
-      }
-    }
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+    },
   },
-  plugins: [require('@tailwindcss/typography')]
+  plugins: [require('@tailwindcss/typography')],
 };
 
 export default config;

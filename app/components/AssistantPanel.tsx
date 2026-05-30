@@ -73,23 +73,56 @@ export default function AssistantPanel() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-[#08122f]/95 p-6">
-          <div className="flex items-center justify-between text-foreground/80">
-            <span>Voice waveform</span>
-            <AudioWaveform size={18} />
+        <div className="rounded-[28px] border border-white/10 bg-[#08122f]/95 p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-foreground/80">
+              <span>Voice waveform</span>
+              <AudioWaveform size={18} />
+            </div>
+            <div className="mt-4 h-24 rounded-[24px] bg-[#0d1738] p-4 flex items-center justify-center">
+              {loading ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="h-6 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.1s' }} />
+                  <span className="h-10 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  <span className="h-14 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.3s' }} />
+                  <span className="h-10 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.4s' }} />
+                  <span className="h-6 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.5s' }} />
+                </div>
+              ) : (
+                <div className="h-1 w-full rounded-full bg-gold/20 relative">
+                  <div className="absolute left-0 top-0 h-full w-full bg-gold/40 animate-pulse rounded-full" />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">Simulate voice / text prompt</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') submit();
+                  }}
+                  placeholder="Ask about pricing, packages, guarantees..."
+                  className="w-full rounded-2xl border border-white/10 bg-[#0c1433] px-4 py-3.5 pr-10 text-sm text-white placeholder-white/40 outline-none focus:border-gold/70 focus:ring-1 focus:ring-gold/30"
+                />
+              </div>
+            </div>
           </div>
-          <div className="mt-4 h-32 rounded-[24px] bg-[#0d1738] p-4">
-            <div className="h-full w-full animate-pulse rounded-full bg-gold/20" />
-          </div>
-          <div className="mt-6 flex items-center gap-3">
+
+          <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
             <button
               onClick={submit}
-              disabled={loading}
-              className="inline-flex items-center justify-center rounded-full bg-gold px-5 py-3 text-sm font-semibold text-background transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={loading || !input.trim()}
+              className="inline-flex items-center justify-center rounded-full bg-gold px-6 py-3.5 text-sm font-semibold text-background transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60 whitespace-nowrap"
             >
               <Send className="mr-2 h-4 w-4" /> Ask AI
             </button>
-            <span className="text-sm text-foreground/70">Input intelligent prompts and simulate a consultative sales conversation.</span>
+            <span className="text-xs text-foreground/60 leading-normal">
+              Type your query above and press Enter or click the button to trigger active consultative sales simulation.
+            </span>
           </div>
         </div>
       </div>

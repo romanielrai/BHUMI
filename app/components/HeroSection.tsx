@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Play, CalendarDays, Headset } from 'lucide-react';
@@ -10,6 +13,12 @@ const features = [
 ];
 
 export default function HeroSection() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem('token'));
+  }, []);
+
   return (
     <section id="home" className="relative overflow-hidden rounded-[32px] border border-white/10 bg-glass p-8 shadow-glow md:p-12">
       <div className="grid gap-12 lg:grid-cols-[1.35fr_0.9fr] lg:items-center">
@@ -32,9 +41,15 @@ export default function HeroSection() {
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Link href="/book-demo" className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-sm font-semibold text-background transition hover:brightness-95">
-              Book Demo
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-sm font-semibold text-background transition hover:brightness-95">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <Link href="/book-demo" className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-sm font-semibold text-background transition hover:brightness-95">
+                Book Demo
+              </Link>
+            )}
             <Link href="/watch-demo" className="inline-flex items-center justify-center rounded-full border border-white/10 px-8 py-4 text-sm text-foreground transition hover:border-gold/70 hover:text-gold">
               <Play className="mr-2 h-4 w-4" />
               Watch Demo

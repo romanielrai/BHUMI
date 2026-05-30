@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function CTASection() {
   return (
-    <section className="mt-24 rounded-[32px] border border-white/10 bg-glass p-10 text-center shadow-glow">
+    <section id="contact" className="mt-24 rounded-[32px] border border-white/10 bg-glass p-10 text-center shadow-glow">
       <h2 className="text-3xl font-semibold text-white md:text-4xl">Ready to activate your AI workforce?</h2>
       <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-foreground/80">
         Book a personalized demo, activate a trained voice agent, and deliver enterprise results with every first interaction.
