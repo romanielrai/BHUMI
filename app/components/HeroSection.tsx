@@ -28,22 +28,19 @@ export default function HeroSection() {
             >
               Your AI Workforce Never Sleeps.
             </motion.h1>
-            <p className="max-w-2xl text-lg leading-8 text-foreground/90">
-              AI Receptionists, Missed Call Recovery, Lead Reactivation, and Appointment Setters that generate revenue 24/7.
-            </p>
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row">
             {isLoggedIn ? (
-              <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-sm font-semibold text-background transition hover:brightness-95">
+              <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-sm font-semibold text-background transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_24px_rgba(207,199,186,0.35)] hover:scale-[1.03]">
                 Go to Dashboard
               </Link>
             ) : (
-              <Link href="/book-demo" className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-sm font-semibold text-background transition hover:brightness-95">
+              <Link href="/book-demo" className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-sm font-semibold text-background transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_24px_rgba(207,199,186,0.35)] hover:scale-[1.03]">
                 Book Demo
               </Link>
             )}
-            <Link href="/watch-demo" className="inline-flex items-center justify-center rounded-full border border-white/10 px-8 py-4 text-sm text-foreground transition hover:border-gold/70 hover:text-gold">
+            <Link href="/watch-demo" className="inline-flex items-center justify-center rounded-full border border-white/10 px-8 py-4 text-sm text-foreground transition-all duration-300 hover:border-gold/50 hover:text-gold hover:shadow-[0_0_20px_rgba(207,199,186,0.12)] hover:scale-[1.03]">
               <Play className="mr-2 h-4 w-4" />
               Watch Demo
             </Link>

@@ -176,14 +176,14 @@ export default function Navbar() {
                 )}
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-2.5 text-sm text-gold transition hover:bg-gold/10"
+                  className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-2.5 text-sm text-gold transition-all duration-300 hover:bg-gold/10 hover:shadow-[0_0_18px_rgba(207,199,186,0.2)] hover:scale-[1.03]"
                 >
                   <LayoutDashboard size={14} />
                   Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground transition hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground transition-all duration-300 hover:bg-white/10 hover:shadow-[0_0_16px_rgba(255,255,255,0.06)] hover:scale-[1.03]"
                 >
                   <LogOut size={14} />
                   Logout
@@ -194,7 +194,7 @@ export default function Navbar() {
                 {/* Google Sign In button */}
                 <button
                   onClick={() => signIn('google')}
-                  className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-foreground transition hover:bg-white/10 hover:border-gold/30 group"
+                  className="inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-foreground transition-all duration-300 hover:bg-white/10 hover:border-gold/30 hover:shadow-[0_0_20px_rgba(66,133,244,0.15)] hover:scale-[1.03] group"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4 flex-shrink-0" aria-hidden="true">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -208,7 +208,7 @@ export default function Navbar() {
                 {/* Portal Login */}
                 <Link
                   href="/login"
-                  className="rounded-full border border-gold/20 bg-gold/5 px-5 py-2.5 text-sm font-medium text-gold transition hover:bg-gold/10"
+                  className="rounded-full border border-gold/20 bg-gold/5 px-5 py-2.5 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold/10 hover:shadow-[0_0_20px_rgba(207,199,186,0.2)] hover:scale-[1.03]"
                 >
                   Portal Login
                 </Link>
