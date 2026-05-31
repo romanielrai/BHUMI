@@ -1,128 +1,382 @@
 'use client';
 
-import { useState } from 'react';
-import { Send, Mic, AudioWaveform } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Mic, MicOff, Volume2, VolumeX, RotateCcw, Bot, User } from 'lucide-react';
 
-const initialMessages = [
-  { role: 'assistant', text: 'Hello — I’m your AI growth specialist. What would you like to achieve today?' }
-];
+/* ── Types ─────────────────────────────────────── */
+interface Message {
+  role: 'assistant' | 'user';
+  text: string;
+  id: string;
+}
+
+/* ── Web Speech API type shims ──────────────────── */
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
+/* ── Animated waveform bar ──────────────────────── */
+function WaveBar({ active, delay }: { active: boolean; delay: number }) {
+  return (
+    <motion.div
+      className="w-0.5 rounded-full bg-gold"
+      animate={active ? { height: ['4px', '20px', '8px', '16px', '4px'] } : { height: '4px' }}
+      transition={active ? { duration: 1.0, delay, repeat: Infinity, ease: 'easeInOut' } : {}}
+    />
+  );
+}
+
+const SESSION_ID = `session-${Date.now()}`;
+const INITIAL: Message = {
+  role: 'assistant',
+  text: "Hello! I'm your AI growth specialist from AI Growth Systems. I can help you with pricing, services, booking a consultation, or answering any questions about our AI receptionist and automation platform. How can I help you today?",
+  id: 'init',
+};
 
 export default function AssistantPanel() {
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState<Message[]>([INITIAL]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [speakEnabled, setSpeakEnabled] = useState(true);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [transcript, setTranscript] = useState('');
 
-  const submit = async () => {
-    if (!input.trim()) return;
-    const nextMessages = [...messages, { role: 'user', text: input }];
-    setMessages(nextMessages);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+
+  /* ── Check browser voice support ── */
+  useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setVoiceSupported(!!SR);
+  }, []);
+
+  /* ── Auto-scroll to bottom ── */
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
+
+  /* ── Speak response ── */
+  const speak = useCallback((text: string) => {
+    if (!speakEnabled || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 1.05;
+    utt.pitch = 1;
+    utt.volume = 0.9;
+    // Prefer a natural English voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v =>
+      v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Alex'))
+    ) ?? voices.find(v => v.lang.startsWith('en'));
+    if (preferred) utt.voice = preferred;
+    window.speechSynthesis.speak(utt);
+  }, [speakEnabled]);
+
+  /* ── Send message to API ── */
+  const sendMessage = useCallback(async (text: string) => {
+    if (!text.trim() || loading) return;
+    const userMsg: Message = { role: 'user', text: text.trim(), id: `u-${Date.now()}` };
+    const next = [...messages, userMsg];
+    setMessages(next);
     setInput('');
+    setTranscript('');
     setLoading(true);
 
     try {
-      const response = await fetch('/api/chatbot/conversation', {
+      const res = await fetch('/api/chatbot/conversation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: 'demo-session', messages: nextMessages })
+        body: JSON.stringify({
+          sessionId: SESSION_ID,
+          messages: next.map(m => ({ role: m.role, text: m.text })),
+        }),
       });
-      const data = await response.json();
-      setMessages((current) => [...current, { role: 'assistant', text: data.answer ?? 'I’m here to help.' }]);
-    } catch (error) {
-      setMessages((current) => [...current, { role: 'assistant', text: 'There was a problem connecting to our AI assistant.' }]);
+      const data = await res.json();
+      const reply = data.answer ?? "I'm here to help — could you rephrase that?";
+      const assistantMsg: Message = { role: 'assistant', text: reply, id: `a-${Date.now()}` };
+      setMessages(prev => [...prev, assistantMsg]);
+      speak(reply);
+    } catch {
+      const errorMsg: Message = {
+        role: 'assistant',
+        text: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
+        id: `err-${Date.now()}`,
+      };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
     }
+  }, [messages, loading, speak]);
+
+  /* ── Voice input ── */
+  const toggleVoice = useCallback(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+      return;
+    }
+
+    const recognition = new SR();
+    recognitionRef.current = recognition;
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setListening(true);
+
+    recognition.onresult = (event: any) => {
+      let interim = '';
+      let final = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) final += t;
+        else interim += t;
+      }
+      setTranscript(interim || final);
+      if (final) {
+        setListening(false);
+        sendMessage(final);
+      }
+    };
+
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+    recognition.start();
+  }, [listening, sendMessage]);
+
+  /* ── Reset chat ── */
+  const resetChat = () => {
+    window.speechSynthesis?.cancel();
+    recognitionRef.current?.stop();
+    setMessages([INITIAL]);
+    setInput('');
+    setTranscript('');
+    setListening(false);
   };
 
+  const quickPrompts = [
+    'What are your pricing plans?',
+    'How does missed call recovery work?',
+    'Book a demo for me',
+    'What\'s your ROI guarantee?',
+  ];
+
   return (
-    <section id="assistant" className="mt-24 rounded-[32px] border border-white/10 bg-glass p-8 shadow-glow">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-        <div className="max-w-xl">
+    <section id="assistant" className="mt-24 rounded-[32px] border border-white/10 bg-glass shadow-glow overflow-hidden">
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-4 border-b border-white/10 p-6 md:flex-row md:items-center md:justify-between md:p-8">
+        <div>
           <p className="text-sm uppercase tracking-[0.3em] text-gold">AI Assistant</p>
-          <h2 className="mt-3 text-3xl font-semibold text-white">Voice agent simulation with chat intelligence.</h2>
-          <p className="mt-4 text-foreground/80">
-            Ask about pricing, services, guarantees, or schedule a consultation and watch the assistant respond with lead qualification and booking intent.
+          <h2 className="mt-2 text-2xl font-semibold text-white md:text-3xl">
+            Talk to our AI growth specialist.
+          </h2>
+          <p className="mt-1.5 text-sm text-foreground/70">
+            Ask about pricing, services, book a demo, or ask anything — type or use your voice.
           </p>
         </div>
-        <div className="flex items-center gap-3 rounded-3xl border border-white/10 bg-[#07102e] px-5 py-4">
-          <div className="rounded-full bg-gold/15 p-3 text-gold">
-            <Mic size={18} />
-          </div>
-          <div>
-            <p className="text-sm text-foreground/80">Talk button</p>
-            <p className="text-sm text-white">Voice input enabled soon</p>
-          </div>
+
+        {/* Controls */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {voiceSupported && (
+            <button
+              onClick={toggleVoice}
+              title={listening ? 'Stop listening' : 'Start voice input'}
+              className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm transition-all duration-300 ${
+                listening
+                  ? 'border-red-500/30 bg-red-950/20 text-red-300 hover:bg-red-950/30'
+                  : 'border-gold/20 bg-gold/5 text-gold hover:bg-gold/10 hover:shadow-[0_0_16px_rgba(207,199,186,0.15)]'
+              }`}
+            >
+              {listening ? <MicOff size={15} /> : <Mic size={15} />}
+              <span>{listening ? 'Stop' : 'Voice'}</span>
+              {listening && (
+                <span className="flex gap-0.5 items-end ml-1">
+                  {[0,0.1,0.2,0.1,0].map((d, i) => (
+                    <WaveBar key={i} active={true} delay={d} />
+                  ))}
+                </span>
+              )}
+            </button>
+          )}
+          <button
+            onClick={() => setSpeakEnabled(v => !v)}
+            title={speakEnabled ? 'Mute AI voice' : 'Enable AI voice'}
+            className={`rounded-full border px-3 py-2.5 text-sm transition-all duration-300 ${
+              speakEnabled
+                ? 'border-white/10 bg-white/5 text-foreground hover:bg-white/10'
+                : 'border-white/5 bg-white/3 text-white/30'
+            }`}
+          >
+            {speakEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+          </button>
+          <button
+            onClick={resetChat}
+            title="Reset conversation"
+            className="rounded-full border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-foreground transition hover:bg-white/10"
+          >
+            <RotateCcw size={15} />
+          </button>
         </div>
       </div>
 
-      <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <div className="space-y-4 rounded-[28px] border border-white/10 bg-[#08102f]/95 p-6">
-          <div className="flex items-center justify-between text-foreground/80">
-            <span>Live call simulation</span>
-            <span className="rounded-full bg-white/5 px-3 py-1 text-xs">Multi-language ready</span>
+      <div className="grid md:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px]">
+        {/* ── Chat window ── */}
+        <div className="flex flex-col border-r border-white/10">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[340px] max-h-[420px]">
+            <AnimatePresence initial={false}>
+              {messages.map((msg) => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                >
+                  {/* Avatar */}
+                  <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
+                    msg.role === 'assistant' ? 'bg-gold/10 text-gold' : 'bg-white/10 text-white'
+                  }`}>
+                    {msg.role === 'assistant' ? <Bot size={15} /> : <User size={15} />}
+                  </div>
+                  {/* Bubble */}
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                    msg.role === 'assistant'
+                      ? 'bg-[#08122e] border border-white/8 text-foreground/90 rounded-tl-sm'
+                      : 'bg-gold/10 border border-gold/20 text-white rounded-tr-sm'
+                  }`}>
+                    {msg.text.split('\n').map((line, i) => (
+                      <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                        {line.replace(/\*\*(.*?)\*\*/g, '$1')}
+                      </p>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* Typing indicator */}
+              {loading && (
+                <motion.div
+                  key="typing"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex gap-3"
+                >
+                  <div className="h-8 w-8 rounded-full bg-gold/10 text-gold flex items-center justify-center flex-shrink-0">
+                    <Bot size={15} />
+                  </div>
+                  <div className="bg-[#08122e] border border-white/8 rounded-2xl rounded-tl-sm px-4 py-3.5 flex items-center gap-1.5">
+                    {[0, 0.15, 0.3].map((d, i) => (
+                      <motion.span
+                        key={i}
+                        className="h-1.5 w-1.5 rounded-full bg-gold/60"
+                        animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
+                        transition={{ duration: 0.9, delay: d, repeat: Infinity }}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <div ref={bottomRef} />
           </div>
-          <div className="h-40 overflow-y-auto rounded-[24px] border border-white/10 bg-[#0d1738] p-4 text-sm text-foreground/80">
-            {messages.map((message, index) => (
-              <div key={index} className="mb-4">
-                <p className={`text-xs uppercase tracking-[0.24em] ${message.role === 'assistant' ? 'text-gold' : 'text-white/70'}`}>
-                  {message.role}
-                </p>
-                <p className="mt-2 whitespace-pre-line text-sm leading-6 text-foreground">{message.text}</p>
-              </div>
-            ))}
+
+          {/* Voice transcript preview */}
+          <AnimatePresence>
+            {(listening || transcript) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="border-t border-white/10 bg-red-950/10 px-5 py-3"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-400" />
+                  </span>
+                  <p className="text-xs text-white/70">
+                    {listening ? (transcript || 'Listening… speak now') : transcript}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Input bar */}
+          <div className="border-t border-white/10 p-4">
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(input); }}
+                placeholder="Type a message or click Voice…"
+                disabled={loading || listening}
+                className="flex-1 rounded-2xl border border-white/10 bg-[#0c1433] px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20 transition disabled:opacity-50"
+              />
+              <button
+                onClick={() => sendMessage(input)}
+                disabled={loading || !input.trim()}
+                className="inline-flex items-center justify-center rounded-full bg-gold px-4 py-3 text-background transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_20px_rgba(207,199,186,0.3)] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Send size={16} />
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-white/10 bg-[#08122f]/95 p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-foreground/80">
-              <span>Voice waveform</span>
-              <AudioWaveform size={18} />
+        {/* ── Right sidebar: Quick prompts + waveform ── */}
+        <div className="flex flex-col gap-4 p-5 bg-[#06101f]/50">
+          {/* Voice waveform display */}
+          <div className="rounded-2xl border border-white/8 bg-[#040a1e] px-4 py-4">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/40">Voice agent</p>
+              <span className={`text-xs ${loading ? 'text-gold animate-pulse' : 'text-white/30'}`}>
+                {loading ? 'Processing…' : listening ? 'Listening…' : 'Ready'}
+              </span>
             </div>
-            <div className="mt-4 h-24 rounded-[24px] bg-[#0d1738] p-4 flex items-center justify-center">
-              {loading ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="h-6 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.1s' }} />
-                  <span className="h-10 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <span className="h-14 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.3s' }} />
-                  <span className="h-10 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.4s' }} />
-                  <span className="h-6 w-1 rounded-full bg-gold animate-bounce" style={{ animationDelay: '0.5s' }} />
-                </div>
-              ) : (
-                <div className="h-1 w-full rounded-full bg-gold/20 relative">
-                  <div className="absolute left-0 top-0 h-full w-full bg-gold/40 animate-pulse rounded-full" />
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4">
-              <label className="block text-xs uppercase tracking-wider text-white/60 mb-2">Simulate voice / text prompt</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') submit();
-                  }}
-                  placeholder="Ask about pricing, packages, guarantees..."
-                  className="w-full rounded-2xl border border-white/10 bg-[#0c1433] px-4 py-3.5 pr-10 text-sm text-white placeholder-white/40 outline-none focus:border-gold/70 focus:ring-1 focus:ring-gold/30"
-                />
-              </div>
+            <div className="flex h-10 items-end justify-between gap-0.5">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <WaveBar key={i} active={loading || listening} delay={i * 0.04} />
+              ))}
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
-            <button
-              onClick={submit}
-              disabled={loading || !input.trim()}
-              className="inline-flex items-center justify-center rounded-full bg-gold px-6 py-3.5 text-sm font-semibold text-background transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60 whitespace-nowrap"
-            >
-              <Send className="mr-2 h-4 w-4" /> Ask AI
-            </button>
-            <span className="text-xs text-foreground/60 leading-normal">
-              Type your query above and press Enter or click the button to trigger active consultative sales simulation.
-            </span>
+          {/* Quick prompts */}
+          <div>
+            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-white/40">Quick prompts</p>
+            <div className="space-y-2">
+              {quickPrompts.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => sendMessage(p)}
+                  disabled={loading}
+                  className="w-full rounded-xl border border-white/8 bg-white/5 px-3 py-2.5 text-left text-xs text-foreground/80 transition-all duration-200 hover:border-gold/20 hover:bg-gold/5 hover:text-gold disabled:opacity-40"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Company context note */}
+          <div className="mt-auto rounded-2xl border border-gold/10 bg-gold/5 p-4">
+            <p className="text-xs font-semibold text-gold mb-1">Company Script Active</p>
+            <p className="text-xs text-foreground/60 leading-relaxed">
+              This AI responds as an AI Growth Systems consultant — pricing, services, objection handling, and bookings.
+            </p>
           </div>
         </div>
       </div>
