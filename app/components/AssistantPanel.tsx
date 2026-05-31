@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable no-undef, no-unused-vars */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,10 +51,20 @@ export default function AssistantPanel() {
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
 
-  /* ── Check browser voice support ── */
+  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
+
+  /* ── Check browser voice support + preload voices ── */
   useEffect(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     setVoiceSupported(!!SR);
+
+    // Voices load asynchronously — preload and cache them
+    const loadVoices = () => {
+      voicesRef.current = window.speechSynthesis?.getVoices() ?? [];
+    };
+    loadVoices();
+    window.speechSynthesis?.addEventListener('voiceschanged', loadVoices);
+    return () => window.speechSynthesis?.removeEventListener('voiceschanged', loadVoices);
   }, []);
 
   /* ── Auto-scroll to bottom ── */
@@ -62,19 +73,56 @@ export default function AssistantPanel() {
   }, [messages, loading]);
 
   /* ── Speak response ── */
-  const speak = useCallback((text: string) => {
+  const speak = useCallback((rawText: string) => {
     if (!speakEnabled || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.rate = 1.05;
-    utt.pitch = 1;
-    utt.volume = 0.9;
-    // Prefer a natural English voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v =>
-      v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Alex'))
-    ) ?? voices.find(v => v.lang.startsWith('en'));
+
+    // Strip markdown and symbols so they don't get read aloud
+    const cleaned = rawText
+      .replace(/\*\*(.*?)\*\*/g, '$1')   // **bold**
+      .replace(/\*(.*?)\*/g, '$1')        // *italic*
+      .replace(/•/g, ',')                 // bullet → pause
+      .replace(/✓/g, '')                  // checkmark
+      .replace(/→/g, 'to')               // arrow
+      .replace(/[#_`~]/g, '')             // other markdown
+      .replace(/\n{2,}/g, '. ')           // double newlines → sentence pause
+      .replace(/\n/g, ', ')               // single newlines → comma pause
+      .replace(/\.{2,}/g, '.')            // multiple dots
+      .replace(/\s{2,}/g, ' ')            // extra spaces
+      .trim();
+
+    const utt = new SpeechSynthesisUtterance(cleaned);
+    utt.rate   = 0.88;   // slightly slower — easier to follow
+    utt.pitch  = 0.95;   // slightly lower — warmer, more natural
+    utt.volume = 1.0;
+
+    // Priority voice list — most natural English voices
+    const priorityNames = [
+      'Google UK English Female',
+      'Google US English',
+      'Samantha',           // macOS
+      'Karen',              // macOS Australian
+      'Moira',              // macOS Irish
+      'Microsoft Aria Online (Natural)',
+      'Microsoft Jenny Online (Natural)',
+      'Google UK English Male',
+    ];
+
+    const voices = voicesRef.current.length
+      ? voicesRef.current
+      : (window.speechSynthesis.getVoices() ?? []);
+
+    const preferred =
+      priorityNames.reduce<SpeechSynthesisVoice | null>((found, name) => {
+        if (found) return found;
+        return voices.find(v => v.name === name) ?? null;
+      }, null)
+      ?? voices.find(v => v.lang === 'en-GB' && !v.localService)
+      ?? voices.find(v => v.lang === 'en-US' && !v.localService)
+      ?? voices.find(v => v.lang.startsWith('en'));
+
     if (preferred) utt.voice = preferred;
+
     window.speechSynthesis.speak(utt);
   }, [speakEnabled]);
 

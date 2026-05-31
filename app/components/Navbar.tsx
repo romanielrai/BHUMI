@@ -86,8 +86,6 @@ export default function Navbar() {
 
   // Determine combined login state (legacy OR Google session)
   const effectiveLoggedIn = isLoggedIn || !!session;
-  const userName = session?.user?.name ?? '';
-  const userImage = session?.user?.image ?? '';
 
   const handleLogout = () => {
     localStorage.removeItem('token');

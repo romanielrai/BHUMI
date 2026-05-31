@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Play, Phone, TrendingUp, Users, CheckCircle2, Circle, PhoneIncoming } from 'lucide-react';
+import { Play, Phone, TrendingUp, Users, PhoneIncoming } from 'lucide-react';
 
 // ── Live activity feed items ──
 const activityPool = [

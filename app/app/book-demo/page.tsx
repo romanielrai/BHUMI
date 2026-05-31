@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { CalendarDays, CheckCircle2, Send } from 'lucide-react';
 
@@ -70,7 +70,7 @@ export default function BookDemoPage() {
             </div>
             <h2 className="text-2xl font-semibold text-white">Demo Booked!</h2>
             <p className="text-foreground/70 max-w-sm">
-              We've received your request for <strong className="text-white">{slot || 'your selected slot'}</strong>. Our team will confirm via email shortly.
+              We&apos;ve received your request for <strong className="text-white">{slot || 'your selected slot'}</strong>. Our team will confirm via email shortly.
             </p>
             <div className="flex gap-4 mt-4">
               <button
@@ -111,7 +111,7 @@ export default function BookDemoPage() {
               <div className="rounded-3xl border border-gold/20 bg-gold/5 p-6">
                 <CalendarDays className="h-6 w-6 text-gold mb-3" />
                 <p className="text-sm font-semibold text-white">Available this week</p>
-                <p className="text-xs text-foreground/70 mt-1">All calls are 30 minutes via Google Meet or Zoom. You'll receive a calendar invite after booking.</p>
+                <p className="text-xs text-foreground/70 mt-1">All calls are 30 minutes via Google Meet or Zoom. You&apos;ll receive a calendar invite after booking.</p>
               </div>
             </div>
 
