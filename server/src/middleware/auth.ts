@@ -30,14 +30,16 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
   }
 }
 
-export async function requireRole(role: string) {
+export function requireRole(roleOrRoles: string | string[]) {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       include: { role: true }
     });
-    if (!user || user.role.name !== role) {
+    
+    const allowedRoles = Array.isArray(roleOrRoles) ? roleOrRoles : [roleOrRoles];
+    if (!user || !allowedRoles.includes(user.role.name)) {
       return res.status(403).json({ error: 'Forbidden' });
     }
     return next();

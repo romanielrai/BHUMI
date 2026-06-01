@@ -22,7 +22,7 @@ interface LeadData {
   createdAt: string;
 }
 
-export default function DashboardPage() {
+export default function UserDashboardPage() {
   const router = useRouter();
   const [metrics, setMetrics] = useState<MetricData | null>(null);
   const [leads, setLeads] = useState<LeadData[]>([]);
@@ -92,13 +92,13 @@ export default function DashboardPage() {
         
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-blue-400">Client Dashboard</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-400">User Dashboard</p>
             <h1 className="mt-3 text-3xl md:text-4xl font-semibold text-white">Revenue, calls, and lead performance.</h1>
           </div>
           <div className="flex items-center gap-3">
             <button 
               onClick={fetchDashboardData}
-              className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-3 text-foreground hover:bg-white/10 hover:text-blue-400 transition"
+              className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-3 text-foreground hover:bg-white/10 hover:text-slate-400 transition"
               title="Refresh Data"
             >
               <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
@@ -123,30 +123,30 @@ export default function DashboardPage() {
             { 
               label: 'Leads Generated', 
               value: metrics?.leadsGenerated ?? 0, 
-              icon: <Users className="h-6 w-6 text-blue-400" /> 
+              icon: <Users className="h-6 w-6 text-slate-400" /> 
             },
             { 
               label: 'Calls Answered', 
               value: metrics?.callsAnswered ?? 0, 
-              icon: <PhoneCall className="h-6 w-6 text-blue-400" /> 
+              icon: <PhoneCall className="h-6 w-6 text-slate-400" /> 
             },
             { 
               label: 'Appointments Booked', 
               value: metrics?.appointmentsBooked ?? 0, 
-              icon: <CalendarDays className="h-6 w-6 text-blue-400" /> 
+              icon: <CalendarDays className="h-6 w-6 text-slate-400" /> 
             },
             { 
               label: 'Recovered Leads', 
               value: metrics?.recoveredLeads ?? 0, 
-              icon: <RefreshCw className="h-6 w-6 text-blue-400" /> 
+              icon: <RefreshCw className="h-6 w-6 text-slate-400" /> 
             }
           ].map((metric) => (
-            <div key={metric.label} className="rounded-3xl border border-blue-500/10 bg-[#08122e] p-6 flex items-center justify-between shadow-sm">
+            <div key={metric.label} className="rounded-3xl border border-slate-500/10 bg-[#08122e] p-6 flex items-center justify-between shadow-sm">
               <div>
                 <p className="text-xs uppercase tracking-wider text-foreground/70">{metric.label}</p>
                 <p className="mt-3 text-3xl font-semibold text-white">{metric.value}</p>
               </div>
-              <div className="rounded-2xl bg-blue-500/10 p-3">
+              <div className="rounded-2xl bg-slate-500/10 p-3">
                 {metric.icon}
               </div>
             </div>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
         <div className="mt-10 rounded-[28px] border border-white/10 bg-[#08122e]/90 p-6 md:p-8">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Recent Inbound Leads</h2>
-            <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs text-blue-400">Live database sync</span>
+            <span className="rounded-full bg-slate-500/10 px-3 py-1 text-xs text-slate-400">Live database sync</span>
           </div>
 
           <div className="overflow-x-auto">
@@ -197,7 +197,7 @@ export default function DashboardPage() {
                       <td className="py-4 px-4 text-center">
                         <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
                           lead.status === 'NEW' ? 'bg-blue-950 text-blue-300 border border-blue-500/20' :
-                          lead.status === 'CONTACTED' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                          lead.status === 'CONTACTED' ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20' :
                           'bg-green-950 text-green-300 border border-green-500/20'
                         }`}>
                           {lead.status}

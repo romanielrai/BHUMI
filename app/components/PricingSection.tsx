@@ -33,7 +33,7 @@ const tiers = [
 
 export default function PricingSection() {
   return (
-    <section id="pricing" className="rounded-[32px] border border-white/10 bg-glass p-8 shadow-glow md:p-12">
+    <section id="pricing" className="scroll-mt-28 rounded-[32px] border border-white/10 bg-glass p-8 shadow-glow md:p-12">
       <div className="mb-10 text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-gold">Pricing</p>
         <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Plans for aggressive enterprise growth.</h2>

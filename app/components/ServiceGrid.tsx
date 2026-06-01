@@ -24,7 +24,7 @@ const services = [
 
 export default function ServiceGrid() {
   return (
-    <section id="services" className="space-y-10">
+    <section id="services" className="scroll-mt-28 space-y-10">
       <div className="space-y-3 text-center">
         <p className="text-sm uppercase tracking-[0.3em] text-gold">Services</p>
         <h2 className="text-3xl font-semibold text-white md:text-4xl">Premium AI workflows for fast revenue growth.</h2>

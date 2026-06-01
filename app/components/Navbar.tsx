@@ -20,8 +20,7 @@ export default function Navbar() {
   // ── Auth state (legacy localStorage + next-auth) ──
   const { data: session } = useSession();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
@@ -63,14 +62,13 @@ export default function Navbar() {
       if (token && userStr) {
         try {
           const user = JSON.parse(userStr);
-          setIsAdmin(user.role === 'admin' || user.role === 'superadmin');
-          setIsSuperAdmin(user.role === 'superadmin');
+          const role = user.role?.toUpperCase?.() || user.role;
+          setUserRole(role);
         } catch {
           // ignore
         }
       } else {
-        setIsAdmin(false);
-        setIsSuperAdmin(false);
+        setUserRole(null);
       }
     };
 
@@ -91,8 +89,7 @@ export default function Navbar() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsLoggedIn(false);
-    setIsAdmin(false);
-    setIsSuperAdmin(false);
+    setUserRole(null);
     setMobileOpen(false);
 
     if (session) {
@@ -102,11 +99,22 @@ export default function Navbar() {
     }
   };
 
+  let dashboardLink = null;
+  if (effectiveLoggedIn) {
+    if (userRole === 'SUPERADMIN') {
+      dashboardLink = { label: 'Superadmin Panel', href: '/superadmin' };
+    } else if (userRole === 'ADMIN') {
+      dashboardLink = { label: 'Admin Panel', href: '/admin' };
+    } else if (userRole === 'USER') {
+      dashboardLink = { label: 'User Dashboard', href: '/dashboard/user' };
+    } else {
+      dashboardLink = { label: 'Client Dashboard', href: '/dashboard' };
+    }
+  }
+
   const allNavItems = [
     ...navItems,
-    ...(effectiveLoggedIn ? [{ label: 'Dashboard', href: '/dashboard' }] : []),
-    ...(isAdmin ? [{ label: 'Admin', href: '/admin' }] : []),
-    ...(isSuperAdmin ? [{ label: 'Superadmin', href: '/superadmin' }] : [])
+    ...(dashboardLink ? [dashboardLink] : [])
   ];
 
   return (
@@ -128,34 +136,39 @@ export default function Navbar() {
         />
 
         <div className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-12">
-          <Link href="/" className="font-semibold text-lg tracking-[0.18em] text-gold">
+          <Link
+            href="/"
+            onClick={(e) => {
+              // If already on home, scroll to top; otherwise navigate home
+              if (typeof window !== 'undefined' && window.location.pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="font-semibold text-lg tracking-[0.18em] text-gold"
+          >
             AI GROWTH SYSTEMS
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden items-center gap-8 md:flex">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href} className="text-sm text-foreground transition hover:text-gold">
+            {allNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={(e) => {
+                  if (item.href === '/') {
+                    if (typeof window !== 'undefined' && window.location.pathname === '/') {
+                      e.preventDefault();
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }
+                }}
+                className="text-sm text-foreground transition hover:text-gold"
+              >
                 {item.label}
               </Link>
             ))}
-            {effectiveLoggedIn && (
-              <>
-                <Link href="/dashboard" className="text-sm text-foreground transition hover:text-gold">
-                  Dashboard
-                </Link>
-                {isAdmin && (
-                  <Link href="/admin" className="text-sm text-foreground transition hover:text-gold font-medium">
-                    Admin
-                  </Link>
-                )}
-                {isSuperAdmin && (
-                  <Link href="/superadmin" className="text-sm text-foreground transition hover:text-gold font-medium">
-                    Superadmin
-                  </Link>
-                )}
-              </>
-            )}
           </nav>
 
           {/* Desktop CTA buttons */}
@@ -172,13 +185,15 @@ export default function Navbar() {
                     className="rounded-full border border-gold/30"
                   />
                 )}
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-2.5 text-sm text-gold transition-all duration-300 hover:bg-gold/10 hover:shadow-[0_0_18px_rgba(207,199,186,0.2)] hover:scale-[1.03]"
-                >
-                  <LayoutDashboard size={14} />
-                  Dashboard
-                </Link>
+                {dashboardLink && (
+                  <Link
+                    href={dashboardLink.href}
+                    className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-2.5 text-sm text-gold transition-all duration-300 hover:bg-gold/10 hover:shadow-[0_0_18px_rgba(207,199,186,0.2)] hover:scale-[1.03]"
+                  >
+                    <LayoutDashboard size={14} />
+                    {dashboardLink.label}
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground transition-all duration-300 hover:bg-white/10 hover:shadow-[0_0_16px_rgba(255,255,255,0.06)] hover:scale-[1.03]"
@@ -242,7 +257,17 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={(e) => {
+                    setMobileOpen(false);
+                    if (item.href === '/') {
+                      if (typeof window !== 'undefined' && window.location.pathname === '/') {
+                        e.preventDefault();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        // let Next handle navigation
+                      }
+                    }
+                  }}
                   className="rounded-2xl px-4 py-3 text-sm text-foreground transition hover:bg-white/5 hover:text-gold"
                 >
                   {item.label}

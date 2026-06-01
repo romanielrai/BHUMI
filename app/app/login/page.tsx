@@ -22,7 +22,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const userStr = localStorage.getItem('user');
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        const role = user.role?.toUpperCase();
+        if (role === 'SUPERADMIN') router.push('/superadmin');
+        else if (role === 'ADMIN') router.push('/admin');
+        else if (role === 'USER') router.push('/dashboard/user');
+        else router.push('/dashboard');
+      } catch (e) {
+        router.push('/dashboard');
+      }
+    } else if (token) {
       router.push('/dashboard');
     }
   }, [router]);
@@ -72,7 +84,13 @@ export default function LoginPage() {
         if (loginData.user) localStorage.setItem('user', JSON.stringify(loginData.user));
 
         setStatus('Registration successful! Redirecting...');
-        setTimeout(() => router.push('/dashboard'), 800);
+        const role = loginData.user?.role?.toUpperCase();
+        setTimeout(() => {
+          if (role === 'SUPERADMIN') router.push('/superadmin');
+          else if (role === 'ADMIN') router.push('/admin');
+          else if (role === 'USER') router.push('/dashboard/user');
+          else router.push('/dashboard');
+        }, 800);
 
       } else {
         // Sign In Flow
@@ -92,7 +110,13 @@ export default function LoginPage() {
         if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
 
         setStatus('Sign in successful! Redirecting...');
-        setTimeout(() => router.push('/dashboard'), 800);
+        const role = data.user?.role?.toUpperCase();
+        setTimeout(() => {
+          if (role === 'SUPERADMIN') router.push('/superadmin');
+          else if (role === 'ADMIN') router.push('/admin');
+          else if (role === 'USER') router.push('/dashboard/user');
+          else router.push('/dashboard');
+        }, 800);
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'An unexpected error occurred.');

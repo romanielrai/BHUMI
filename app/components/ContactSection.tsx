@@ -75,7 +75,7 @@ export default function ContactSection() {
   ];
 
   return (
-    <section id="contact" className="mt-24 rounded-[32px] border border-white/10 bg-glass shadow-glow overflow-hidden">
+    <section id="contact" className="scroll-mt-28 mt-24 rounded-[32px] border border-white/10 bg-glass shadow-glow overflow-hidden">
       {/* Header */}
       <div className="border-b border-white/10 p-6 md:p-10">
         <p className="text-sm uppercase tracking-[0.3em] text-gold">Contact Sales</p>

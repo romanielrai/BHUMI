@@ -219,7 +219,7 @@ export default function AssistantPanel() {
   ];
 
   return (
-    <section id="assistant" className="mt-24 rounded-[32px] border border-white/10 bg-glass shadow-glow overflow-hidden">
+    <section id="assistant" className="scroll-mt-28 mt-24 rounded-[32px] border border-white/10 bg-glass shadow-glow overflow-hidden">
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 border-b border-white/10 p-6 md:flex-row md:items-center md:justify-between md:p-8">
         <div>

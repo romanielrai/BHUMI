@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Users, PhoneCall, CalendarDays, RefreshCw, Settings, BookOpen, ShieldCheck, BarChart3 } from 'lucide-react';
+import { Users, PhoneCall, CalendarDays, RefreshCw, Settings, BookOpen, ShieldCheck, BarChart3, LogOut } from 'lucide-react';
 
 interface Lead {
   id: string;
@@ -14,6 +14,12 @@ interface Lead {
   status: string;
   source: string;
   createdAt: string;
+}
+
+interface MetricData {
+  totalLeads: number;
+  appointmentsBooked: number;
+  callsAnswered: number;
 }
 
 const adminActions = [
@@ -29,32 +35,26 @@ export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
+  const [metrics, setMetrics] = useState<MetricData | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-
-    if (!token || !userStr) {
-      router.push('/login');
-      return;
-    }
-
+  const fetchDashboardData = useCallback(async (token: string) => {
     try {
-      const user = JSON.parse(userStr);
-      if (user.role === 'admin' || user.role === 'superadmin') {
-        setAuthorized(true);
-        fetchLeads(token);
+      const metricsResponse = await fetch('/api/dashboard/admin', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (metricsResponse.ok) {
+        const metricsData = await metricsResponse.json();
+        setMetrics(metricsData.metrics);
       }
-    } catch (e) {
-      router.push('/login');
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error(err);
     }
-  }, [router]);
+  }, []);
 
-  const fetchLeads = async (token: string) => {
+  const fetchLeads = useCallback(async (token: string) => {
     setLeadsLoading(true);
     try {
       const res = await fetch('/api/leads?clientId=client-default', {
@@ -68,6 +68,48 @@ export default function AdminPage() {
       // silently fail — leads table will just be empty
     } finally {
       setLeadsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    if (!token || !userStr) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userStr);
+      const role = user.role?.toUpperCase?.() || user.role;
+      if (role === 'ADMIN' || role === 'SUPERADMIN') {
+        setAuthorized(true);
+        if (role === 'SUPERADMIN') setIsSuperAdmin(true);
+        fetchLeads(token);
+        fetchDashboardData(token);
+      } else {
+        router.push('/login');
+        return;
+      }
+    } catch (e) {
+      router.push('/login');
+    } finally {
+      setLoading(false);
+    }
+  }, [router, fetchLeads, fetchDashboardData]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
+
+  const refreshData = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchLeads(token);
+      fetchDashboardData(token);
     }
   };
 
@@ -104,35 +146,58 @@ export default function AdminPage() {
     );
   }
 
+  const systemStats = [
+    { label: 'Total Leads (All Clients)', value: metrics?.totalLeads ?? '...' },
+    { label: 'Appointments Booked', value: metrics?.appointmentsBooked ?? '...' },
+    { label: 'Total Calls Answered', value: metrics?.callsAnswered ?? '...' },
+  ];
+
   return (
     <main className="mx-auto mt-28 max-w-7xl px-6 pb-24 md:px-12">
       <div className="rounded-[32px] border border-white/10 bg-glass p-8 md:p-10 shadow-glow">
 
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-gold">Admin Panel</p>
-            <h1 className="mt-3 text-3xl md:text-4xl font-semibold text-white">Client, lead & analytics management.</h1>
+            <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-gold mb-3">
+              <ShieldCheck size={12} /> Admin Control Center
+            </div>
+            <h1 className="text-3xl md:text-4xl font-semibold text-white">Client, lead & analytics management.</h1>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <button
-              onClick={() => {
-                const token = localStorage.getItem('token');
-                if (token) fetchLeads(token);
-              }}
+              onClick={refreshData}
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground transition hover:bg-white/10 hover:text-gold"
             >
               <RefreshCw size={15} className={leadsLoading ? 'animate-spin' : ''} />
               Refresh
             </button>
-            <Link
-              href="/superadmin"
-              className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-2.5 text-sm text-gold transition hover:bg-gold/10"
+            {isSuperAdmin && (
+              <Link
+                href="/superadmin"
+                className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-sm text-purple-400 transition hover:bg-purple-500/20"
+              >
+                <ShieldCheck size={15} />
+                Superadmin
+              </Link>
+            )}
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 rounded-full bg-red-950/20 border border-red-500/20 px-4 py-2.5 text-sm font-medium text-red-300 hover:bg-red-900/30 transition shadow-sm"
             >
-              <ShieldCheck size={15} />
-              Superadmin
-            </Link>
+              <LogOut size={15} /> Logout
+            </button>
           </div>
+        </div>
+
+        {/* System Stats */}
+        <div className="grid gap-4 sm:grid-cols-3 mb-10">
+          {systemStats.map((stat) => (
+            <div key={stat.label} className="rounded-3xl border border-gold/10 bg-[#08122e] p-5 flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wider text-foreground/60">{stat.label}</p>
+              <p className="text-2xl font-semibold text-white">{stat.value}</p>
+            </div>
+          ))}
         </div>
 
         {/* Action Cards */}
@@ -143,7 +208,7 @@ export default function AdminPage() {
               className="group rounded-3xl border border-white/10 bg-[#08122e] p-5 transition hover:border-gold/20 hover:bg-[#0a1535] cursor-pointer"
             >
               <div className="flex items-start gap-4">
-                <div className="rounded-2xl bg-gold/10 p-3 mt-0.5">{action.icon}</div>
+                <div className="rounded-2xl bg-gold/10 p-3 mt-0.5 group-hover:bg-gold/20 transition">{action.icon}</div>
                 <div>
                   <p className="font-semibold text-white text-sm">{action.title}</p>
                   <p className="mt-1 text-xs text-foreground/60 leading-relaxed">{action.desc}</p>
@@ -198,11 +263,10 @@ export default function AdminPage() {
                         <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-xs text-white/80">{lead.source}</span>
                       </td>
                       <td className="py-4 px-4 text-center">
-                        <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
-                          lead.status === 'NEW' ? 'bg-blue-950 text-blue-300 border border-blue-500/20' :
+                        <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${lead.status === 'NEW' ? 'bg-blue-950 text-blue-300 border border-blue-500/20' :
                           lead.status === 'CONTACTED' ? 'bg-gold/10 text-gold border border-gold/20' :
-                          'bg-green-950 text-green-300 border border-green-500/20'
-                        }`}>
+                            'bg-green-950 text-green-300 border border-green-500/20'
+                          }`}>
                           {lead.status}
                         </span>
                       </td>

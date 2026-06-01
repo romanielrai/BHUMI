@@ -13,37 +13,47 @@ if (!twilioAccountSid || !twilioAuthToken) {
 const twilioClient = twilioAccountSid && twilioAuthToken ? twilio(twilioAccountSid, twilioAuthToken) : null;
 
 router.post('/call', async (req, res) => {
-  const { to, from, clientId, leadId } = req.body;
-  if (!to || !from) {
-    return res.status(400).json({ error: 'Both to and from numbers are required' });
-  }
-
-  let sid = 'mock-call-sid-' + Math.random().toString(36).substring(7);
-  let status = 'queued';
-
-  if (twilioClient) {
-    const call = await twilioClient.calls.create({
-      url: process.env.TWILIO_CALLBACK_URL ?? 'http://demo.twilio.com/docs/voice.xml',
-      to,
-      from
-    });
-    sid = call.sid;
-    status = call.status;
-  } else {
-    console.log(`[Twilio Mock] Simulating voice call from ${from} to ${to}`);
-  }
-
-  await prisma.call.create({
-    data: {
-      client: { connect: { id: clientId } },
-      lead: leadId ? { connect: { id: leadId } } : undefined,
-      initiatedBy: 'system',
-      durationSec: 0,
-      outcome: 'initiated'
+  try {
+    const { to, from, clientId, leadId } = req.body;
+    if (!to || !from) {
+      return res.status(400).json({ error: 'Both to and from numbers are required' });
     }
-  });
 
-  res.json({ sid, status });
+    let sid = 'mock-call-sid-' + Math.random().toString(36).substring(7);
+    let status = 'queued';
+
+    if (twilioClient) {
+      try {
+        const call = await twilioClient.calls.create({
+          url: process.env.TWILIO_CALLBACK_URL ?? 'http://demo.twilio.com/docs/voice.xml',
+          to,
+          from
+        });
+        sid = call.sid;
+        status = call.status;
+      } catch (error) {
+        console.error('Twilio call creation error:', error);
+      }
+    } else {
+      console.log(`[Twilio Mock] Simulating voice call from ${from} to ${to}`);
+    }
+
+    await prisma.call.create({
+      data: {
+        clientId: clientId || 'client-default',
+        leadId: leadId || undefined,
+        initiatedBy: 'system',
+        durationSec: 0,
+        outcome: 'initiated'
+      }
+    });
+
+    res.json({ sid, status });
+  } catch (error) {
+    console.error('Voice call error:', error);
+    res.status(500).json({ error: 'Failed to initiate voice call' });
+  }
 });
 
 export default router;
+
