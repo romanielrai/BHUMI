@@ -5,7 +5,8 @@ const store: Record<string, any[]> = {
   role: [
     { id: 'role-admin', name: 'admin', description: 'Administrator' },
     { id: 'role-superadmin', name: 'superadmin', description: 'Super Administrator' },
-    { id: 'role-user', name: 'user', description: 'Regular User' }
+    { id: 'role-user', name: 'user', description: 'Regular User' },
+    { id: 'role-client', name: 'CLIENT', description: 'Client access to dashboard and reports' }
   ],
   user: [
     {
