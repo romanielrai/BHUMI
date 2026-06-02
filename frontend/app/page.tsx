@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import HeroSection from '@/components/HeroSection';
 import ServiceGrid from '@/components/ServiceGrid';
@@ -10,6 +11,11 @@ import CTASection from '@/components/CTASection';
 import Footer from '@/components/Footer';
 
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <main className="relative overflow-hidden px-6 pb-24 pt-24 md:px-12">
       <section className="mx-auto max-w-7xl">
@@ -17,7 +23,7 @@ export default function HomePage() {
       </section>
 
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
+        initial={mounted ? { opacity: 0, y: 40 } : false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
@@ -27,7 +33,7 @@ export default function HomePage() {
       </motion.section>
 
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
+        initial={mounted ? { opacity: 0, y: 40 } : false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.1 }}
@@ -37,7 +43,7 @@ export default function HomePage() {
       </motion.section>
 
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
+        initial={mounted ? { opacity: 0, y: 40 } : false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.2 }}
@@ -47,7 +53,7 @@ export default function HomePage() {
       </motion.section>
 
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
+        initial={mounted ? { opacity: 0, y: 40 } : false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.3 }}

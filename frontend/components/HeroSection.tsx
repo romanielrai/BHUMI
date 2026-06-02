@@ -35,6 +35,7 @@ function WaveBar({ delay }: { delay: number }) {
 }
 
 export default function HeroSection() {
+  const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeCalls, setActiveCalls] = useState(18);
   const [leads, setLeads] = useState(142);
@@ -45,6 +46,7 @@ export default function HeroSection() {
 
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem('token'));
+    setMounted(true);
   }, []);
 
   // Simulate live data ticking
@@ -82,7 +84,7 @@ export default function HeroSection() {
             Enterprise AI Automation
           </div>
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={mounted ? { opacity: 0, y: 20 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="max-w-3xl text-5xl font-semibold leading-tight text-white md:text-6xl"
@@ -109,7 +111,7 @@ export default function HeroSection() {
 
         {/* ── Right: Live Dashboard ── */}
         <motion.div
-          initial={{ opacity: 0, x: 30 }}
+          initial={mounted ? { opacity: 0, x: 30 } : false}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
           className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#060e26] p-5 shadow-glow"
