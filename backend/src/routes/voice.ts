@@ -10,7 +10,17 @@ if (!twilioAccountSid || !twilioAuthToken) {
   console.warn('WARNING: TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are not defined. Voice calls will run in SIMULATION mode.');
 }
 
-const twilioClient = twilioAccountSid && twilioAuthToken ? twilio(twilioAccountSid, twilioAuthToken) : null;
+let twilioClient = null;
+if (twilioAccountSid && twilioAuthToken && typeof twilioAccountSid === 'string' && twilioAccountSid.startsWith('AC')) {
+  try {
+    twilioClient = twilio(twilioAccountSid, twilioAuthToken);
+  } catch (err) {
+    console.error('Twilio initialization error:', err);
+    twilioClient = null;
+  }
+} else {
+  if (twilioAccountSid || twilioAuthToken) console.warn('Twilio credentials present but invalid format; running in simulation mode.');
+}
 
 router.post('/call', async (req, res) => {
   try {

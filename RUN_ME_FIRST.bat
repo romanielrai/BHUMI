@@ -28,8 +28,8 @@ if %errorlevel% neq 0 goto error
 
 echo.
 echo [3/4] Installing workspace dependencies...
-call npm --workspace app install
-call npm --workspace server install
+call npm --workspace frontend install
+call npm --workspace backend install
 if %errorlevel% neq 0 goto error
 
 echo.

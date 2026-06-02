@@ -37,20 +37,20 @@ if [ ! -f "package.json" ]; then
     echo "❌ FAILED: package.json not found"
     exit 1
 fi
-if [ ! -f "app/package.json" ]; then
-    echo "❌ FAILED: app/package.json not found"
+if [ ! -f "frontend/package.json" ]; then
+    echo "❌ FAILED: frontend/package.json not found"
     exit 1
 fi
-if [ ! -f "server/package.json" ]; then
-    echo "❌ FAILED: server/package.json not found"
+if [ ! -f "backend/package.json" ]; then
+    echo "❌ FAILED: backend/package.json not found"
     exit 1
 fi
-if [ ! -f "app/.env.local" ]; then
-    echo "❌ FAILED: app/.env.local not found"
+if [ ! -f "frontend/.env.local" ]; then
+    echo "❌ FAILED: frontend/.env.local not found"
     exit 1
 fi
-if [ ! -f "server/.env" ]; then
-    echo "❌ FAILED: server/.env not found"
+if [ ! -f "backend/.env" ]; then
+    echo "❌ FAILED: backend/.env not found"
     exit 1
 fi
 echo "✅ All required files present"
@@ -68,14 +68,14 @@ echo ""
 
 # Check environment files
 echo "[5/5] Checking environment configuration..."
-if grep -q "NEXTAUTH_URL" "app/.env.local"; then
+if grep -q "NEXTAUTH_URL" "frontend/.env.local"; then
     echo "✅ Frontend configuration ready"
 else
     echo "❌ FAILED: Frontend environment incomplete"
     exit 1
 fi
 
-if grep -q "JWT_SECRET" "server/.env"; then
+if grep -q "JWT_SECRET" "backend/.env"; then
     echo "✅ Backend configuration ready"
 else
     echo "❌ FAILED: Backend environment incomplete"

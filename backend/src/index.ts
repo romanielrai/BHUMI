@@ -3,13 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import 'express-async-errors';
 import dotenv from 'dotenv';
-import authRoutes from './routes/auth';
-import leadRoutes from './routes/leads';
-import dashboardRoutes from './routes/dashboard';
-import chatbotRoutes from './routes/chatbot';
-import voiceRoutes from './routes/voice';
-
-dotenv.config();
+import path from 'path';
+// Load server-specific env file before loading other modules
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+// Environment loaded from server/.env
+// Import route modules after env is loaded so they see the variables
+const authRoutes = require('./routes/auth').default;
+const leadRoutes = require('./routes/leads').default;
+const dashboardRoutes = require('./routes/dashboard').default;
+const chatbotRoutes = require('./routes/chatbot').default;
+const voiceRoutes = require('./routes/voice').default;
 const app = express();
 
 app.use(helmet());

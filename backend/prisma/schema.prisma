@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -45,9 +45,9 @@ model Client {
   contactName    String
   contactEmail   String
   contactPhone   String
-  plan           Plan
+  plan           String        @default("STARTER")
   industry       String?
-  status         ClientStatus @default(ACTIVE)
+  status         String        @default("ACTIVE")
   userAccounts   User[]
   leads          Lead[]
   appointments   Appointment[]
@@ -58,104 +58,69 @@ model Client {
   subscriptions  Subscription[]
   invoices       Invoice[]
   payments       Payment[]
+  voiceLogs      VoiceLog[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
 
-enum ClientStatus {
-  ACTIVE
-  SUSPENDED
-  CANCELLED
-}
-
-enum Plan {
-  STARTER
-  GROWTH
-  DOMINANCE
-}
-
 model Lead {
   id          String      @id @default(uuid())
-  client      Client      @relation(fields: [clientId], references: [id])
+  client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
+  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String?
   name        String
   email       String
   phone       String
   business    String
-  status      LeadStatus  @default(NEW)
+  status      String      @default("NEW")
   source      String
   notes       String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   appointments Appointment[]
   chatbotLogs  ChatbotLog[]
-}
-
-enum LeadStatus {
-  NEW
-  QUALIFIED
-  CONTACTED
-  BOOKED
-  NURTURE
-  LOST
+  calls       Call[]
+  sms         SMS[]
+  emails      Email[]
 }
 
 model Appointment {
   id          String    @id @default(uuid())
-  client      Client    @relation(fields: [clientId], references: [id])
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
-  lead        Lead?     @relation(fields: [leadId], references: [id])
+  lead        Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
   leadId      String?
   title       String
   scheduledAt DateTime
-  status      AppointmentStatus @default(PENDING)
+  status      String    @default("PENDING")
   notes       String?
-  createdBy   User?     @relation(fields: [createdById], references: [id])
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdById String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
 
-enum AppointmentStatus {
-  PENDING
-  CONFIRMED
-  COMPLETED
-  CANCELLED
-}
-
 model Campaign {
-  id          String         @id @default(uuid())
-  client      Client         @relation(fields: [clientId], references: [id])
+  id          String    @id @default(uuid())
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
   name        String
-  type        CampaignType
-  status      CampaignStatus @default(ACTIVE)
+  type        String    @default("LEAD_REACTIVATION")
+  status      String    @default("ACTIVE")
   startDate   DateTime
   endDate     DateTime?
   budget      Float?
   notes       String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-}
-
-enum CampaignType {
-  LEAD_REACTIVATION
-  MISSED_CALL_RECOVERY
-  APPOINTMENT_SETTER
-}
-
-enum CampaignStatus {
-  ACTIVE
-  PAUSED
-  COMPLETED
-  ARCHIVED
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Call {
   id            String      @id @default(uuid())
-  client        Client      @relation(fields: [clientId], references: [id])
+  client        Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId      String
-  lead          Lead?       @relation(fields: [leadId], references: [id])
+  lead          Lead?       @relation(fields: [leadId], references: [id], onDelete: SetNull)
   leadId        String?
   initiatedBy   String
   durationSec   Int
@@ -166,9 +131,9 @@ model Call {
 
 model SMS {
   id          String   @id @default(uuid())
-  client      Client   @relation(fields: [clientId], references: [id])
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
-  lead        Lead?    @relation(fields: [leadId], references: [id])
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
   leadId      String?
   body        String
   status      String
@@ -177,9 +142,9 @@ model SMS {
 
 model Email {
   id          String   @id @default(uuid())
-  client      Client   @relation(fields: [clientId], references: [id])
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
-  lead        Lead?    @relation(fields: [leadId], references: [id])
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
   leadId      String?
   subject     String
   body        String
@@ -190,25 +155,18 @@ model Email {
 }
 
 model Subscription {
-  id          String      @id @default(uuid())
-  client      Client      @relation(fields: [clientId], references: [id])
+  id          String   @id @default(uuid())
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
-  plan        Plan
-  status      SubscriptionStatus @default(ACTIVE)
-  startedAt   DateTime    @default(now())
+  plan        String   @default("STARTER")
+  status      String   @default("ACTIVE")
+  startedAt   DateTime @default(now())
   renewsAt    DateTime
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  TRIAL
-  CANCELLED
-  PAST_DUE
 }
 
 model Invoice {
   id          String   @id @default(uuid())
-  client      Client   @relation(fields: [clientId], references: [id])
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
   amount      Float
   dueDate     DateTime
@@ -219,7 +177,7 @@ model Invoice {
 
 model Payment {
   id          String   @id @default(uuid())
-  client      Client   @relation(fields: [clientId], references: [id])
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
   amount      Float
   method      String
@@ -229,20 +187,20 @@ model Payment {
 
 model ChatbotLog {
   id          String   @id @default(uuid())
-  user        User?    @relation(fields: [userId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId      String?
-  lead        Lead?    @relation(fields: [leadId], references: [id])
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
   leadId      String?
   sessionId   String
   role        String
   message     String
-  metadata    Json?
+  metadata    String?
   createdAt   DateTime @default(now())
 }
 
 model VoiceLog {
   id          String   @id @default(uuid())
-  client      Client   @relation(fields: [clientId], references: [id])
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
   callId      String?
   transcript  String?
@@ -252,7 +210,7 @@ model VoiceLog {
 
 model AuditLog {
   id          String   @id @default(uuid())
-  user        User?    @relation(fields: [userId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId      String?
   action      String
   target      String?

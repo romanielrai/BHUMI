@@ -31,8 +31,8 @@ fi
 
 echo ""
 echo "[3/4] Installing workspace dependencies..."
-npm --workspace app install
-npm --workspace server install
+npm --workspace frontend install
+npm --workspace backend install
 if [ $? -ne 0 ]; then
     echo ""
     echo "ERROR: Failed to install workspace dependencies!"

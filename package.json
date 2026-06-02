@@ -2,18 +2,21 @@
   "name": "ai-growth-systems",
   "private": true,
   "workspaces": [
-    "app",
-    "server"
+    "frontend",
+    "backend"
   ],
   "scripts": {
-    "dev": "concurrently \"npm --workspace app run dev\" \"npm --workspace server run dev\"",
-    "dev:app": "npm --workspace app run dev",
-    "dev:server": "npm --workspace server run dev",
-    "build": "npm --workspace app run build && npm --workspace server run build",
-    "start": "concurrently \"npm --workspace app run start\" \"npm --workspace server run start\"",
-    "lint": "npm --workspace app run lint && npm --workspace server run lint"
+    "clean-ports": "npx kill-port 3001 4000 || true",
+    "dev": "npm run clean-ports && concurrently \"npm --workspace frontend run dev\" \"npm --workspace backend run dev\"",
+    "dev:app": "npm --workspace frontend run dev",
+    "dev:server": "npm --workspace backend run dev",
+    "build": "npm --workspace frontend run build && npm --workspace backend run build",
+    "start": "concurrently \"npm --workspace frontend run start\" \"npm --workspace backend run start\"",
+    "start:prod": "npm --workspace backend run start-prod",
+    "lint": "npm --workspace frontend run lint && npm --workspace backend run lint"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.0",
+    "kill-port": "^1.6.1"
   }
 }

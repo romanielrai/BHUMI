@@ -3,17 +3,10 @@ import bcrypt from 'bcryptjs';
 // Stateful in-memory database tables
 const store: Record<string, any[]> = {
   role: [
-<<<<<<< HEAD
-    { id: 'role-admin', name: 'admin', description: 'Administrator' },
-    { id: 'role-superadmin', name: 'superadmin', description: 'Super Administrator' },
-    { id: 'role-user', name: 'user', description: 'Regular User' },
-    { id: 'role-client', name: 'CLIENT', description: 'Client access to dashboard and reports' }
-=======
     { id: 'role-admin', name: 'ADMIN', description: 'Administrator' },
     { id: 'role-superadmin', name: 'SUPERADMIN', description: 'Super Administrator' },
     { id: 'role-client', name: 'CLIENT', description: 'Client User' },
     { id: 'role-user', name: 'USER', description: 'Regular User' }
->>>>>>> 1ecd760 (fix: apply local fixes)
   ],
   user: [
     {
@@ -32,10 +25,19 @@ const store: Record<string, any[]> = {
     }
   ],
   client: [
-    { id: 'role-admin', name: 'ADMIN', description: 'Administrator' },
-    { id: 'role-superadmin', name: 'SUPERADMIN', description: 'Super Administrator' },
-    { id: 'role-client', name: 'CLIENT', description: 'Client User' },
-    { id: 'role-user', name: 'USER', description: 'Regular User' }
+    {
+      id: 'client-default',
+      companyName: 'Default Client Corp',
+      contactName: 'John Doe',
+      contactEmail: 'john@example.com',
+      contactPhone: '1234567890',
+      plan: 'GROWTH'
+    }
+  ],
+  lead: [
+    {
+      id: 'lead-1',
+      name: 'Sarah Connor',
       email: 'sarah@skynet.com',
       phone: '555-0199',
       business: 'Tech Corp',

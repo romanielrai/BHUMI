@@ -41,23 +41,23 @@ if not exist "package.json" (
     pause
     exit /b 1
 )
-if not exist "app\package.json" (
-    echo ❌ FAILED: app/package.json not found
+if not exist "frontend\package.json" (
+    echo ❌ FAILED: frontend/package.json not found
     pause
     exit /b 1
 )
-if not exist "server\package.json" (
-    echo ❌ FAILED: server/package.json not found
+if not exist "backend\package.json" (
+    echo ❌ FAILED: backend/package.json not found
     pause
     exit /b 1
 )
-if not exist "app\.env.local" (
-    echo ❌ FAILED: app/.env.local not found
+if not exist "frontend\.env.local" (
+    echo ❌ FAILED: frontend/.env.local not found
     pause
     exit /b 1
 )
-if not exist "server\.env" (
-    echo ❌ FAILED: server/.env not found
+if not exist "backend\.env" (
+    echo ❌ FAILED: backend/.env not found
     pause
     exit /b 1
 )
@@ -76,7 +76,7 @@ echo.
 
 REM Check environment files
 echo [5/5] Checking environment configuration...
-findstr /M "NEXTAUTH_URL" "app\.env.local" >nul
+findstr /M "NEXTAUTH_URL" "frontend\.env.local" >nul
 if %errorlevel% equ 0 (
     echo ✅ Frontend configuration ready
 ) else (
@@ -85,7 +85,7 @@ if %errorlevel% equ 0 (
     exit /b 1
 )
 
-findstr /M "JWT_SECRET" "server\.env" >nul
+findstr /M "JWT_SECRET" "backend\.env" >nul
 if %errorlevel% equ 0 (
     echo ✅ Backend configuration ready
 ) else (
