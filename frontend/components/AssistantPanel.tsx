@@ -69,7 +69,9 @@ export default function AssistantPanel() {
 
   /* ── Auto-scroll to bottom ── */
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 1 || loading) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, loading]);
 
   /* ── Speak response ── */
