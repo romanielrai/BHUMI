@@ -12,28 +12,28 @@
 1. **Install Dependencies**
 ```bash
 npm install
-npm --workspace app install
-npm --workspace server install
+npm --workspace frontend install
+npm --workspace backend install
 ```
 
 2. **Configure Environment Variables**
 
-**For Frontend** (`app/.env.local`):
+**For Frontend** (`frontend/.env.local`):
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:4000/api
-NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://127.0.0.1:4000/api
+NEXTAUTH_URL=http://127.0.0.1:3001
 NEXTAUTH_SECRET=your-secret-key-here
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
-**For Backend** (`server/.env`):
+**For Backend** (`backend/.env`):
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ai_growth_systems
+DATABASE_URL=file:./dev.db
 JWT_SECRET=your-jwt-secret-key
 NODE_ENV=development
 PORT=4000
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://127.0.0.1:3001
 
 # Optional AI Services
 OPENAI_API_KEY=your-openai-api-key
@@ -44,31 +44,28 @@ ELEVENLABS_API_KEY=your-elevenlabs-key
 
 3. **Database Setup**
 ```bash
-# Push Prisma schema to database
-npm --workspace server exec prisma db push
-
-# (Optional) Seed with sample data
-npm --workspace server run ts-node server/prisma/seed.ts
+# Push Prisma schema to database (in simulation mode, dev.db is in-memory/local SQLite)
+npm --workspace backend exec prisma db push
 ```
 
 4. **Start Development Servers**
 
 **Terminal 1 - Backend:**
 ```bash
-npm --workspace server run dev
-# Backend runs on http://localhost:4000
+npm --workspace backend run dev
+# Backend runs on http://127.0.0.1:4000
 ```
 
 **Terminal 2 - Frontend:**
 ```bash
-npm --workspace app run dev
-# Frontend runs on http://localhost:3000
+npm --workspace frontend run dev
+# Frontend runs on http://127.0.0.1:3001
 ```
 
 ### Verify Setup
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:4000/api
-- Health Check: http://localhost:4000/api/health
+- Frontend: http://127.0.0.1:3001
+- Backend API: http://127.0.0.1:4000/api
+- Health Check: http://127.0.0.1:4000/api/health
 
 ## Authentication Flow
 

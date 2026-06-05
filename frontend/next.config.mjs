@@ -14,7 +14,7 @@ const nextConfig = {
     ]
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:4000/api';
     return {
       // Proxy the backend auth endpoints before NextAuth's /api/auth/[...nextauth] route claims them.
       beforeFiles: [

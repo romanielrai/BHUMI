@@ -61,10 +61,77 @@ const store: Record<string, any[]> = {
   call: [],
   sms: [],
   email: [],
-  appointment: [],
-  chatbotlog: [],
+  appointment: [
+    {
+      id: 'appt-1',
+      clientId: 'client-default',
+      leadId: 'lead-1',
+      title: 'AI Receptionist Onboarding Consultation',
+      scheduledAt: new Date(Date.now() + 86400000 * 2), // 2 days in future
+      durationMin: 30,
+      status: 'PENDING',
+      notes: 'Wants custom script for tech support agency.'
+    },
+    {
+      id: 'appt-2',
+      clientId: 'client-default',
+      leadId: 'lead-2',
+      title: 'Missed Call Recovery Deep Dive',
+      scheduledAt: new Date(Date.now() + 86400000 * 4), // 4 days in future
+      durationMin: 45,
+      status: 'CONFIRMED',
+      notes: 'Interested in GHL integration.'
+    }
+  ],
+  chatbotlog: [
+    {
+      id: 'chatlog-1',
+      sessionId: 'sess-123',
+      role: 'user',
+      message: 'Hello, what are your pricing packages?',
+      createdAt: new Date(Date.now() - 300000)
+    },
+    {
+      id: 'chatlog-2',
+      sessionId: 'sess-123',
+      role: 'assistant',
+      message: 'We have three packages designed for real ROI. The Starter at $1,497/mo, Growth at $2,997/mo, and Dominance at $5,997/mo. Which of these sounds like the right fit for your business?',
+      createdAt: new Date(Date.now() - 280000)
+    },
+    {
+      id: 'chatlog-3',
+      sessionId: 'sess-123',
+      role: 'user',
+      message: 'I am interested in Growth.',
+      createdAt: new Date(Date.now() - 250000)
+    },
+    {
+      id: 'chatlog-4',
+      sessionId: 'sess-123',
+      role: 'assistant',
+      message: 'Great choice! The Growth plan includes missed call recovery, CRM integration, and bi-weekly strategy calls. Would you like to book a demo call to get started?',
+      createdAt: new Date(Date.now() - 240000)
+    }
+  ],
   voicelog: [],
-  auditlog: []
+  auditlog: [
+    {
+      id: 'audit-1',
+      action: 'SYSTEM_BOOT',
+      actor: 'system',
+      details: 'Express Server bootstrapped with in-memory database configuration',
+      ipAddress: '127.0.0.1',
+      createdAt: new Date(Date.now() - 1000 * 60 * 10)
+    },
+    {
+      id: 'audit-2',
+      action: 'USER_LOGIN',
+      actor: 'superadmin@gmail.com',
+      details: 'Super administrator logged in successfully',
+      ipAddress: '127.0.0.1',
+      createdAt: new Date(Date.now() - 1000 * 60 * 5)
+    }
+  ]
 };
 
 // Sub-query matching logic
@@ -183,8 +250,85 @@ function createModelProxy(name: string): any {
 
         if (isCreateLike(prop)) {
           return async (args?: any) => {
+            if (prop === 'create' || prop === 'createMany') {
+              const data = args?.data ?? {};
+              const records = Array.isArray(data) ? data : [data];
+              const createdRecords = [];
+
+              for (const singleData of records) {
+                const parsedData: Record<string, any> = {};
+                for (const key of Object.keys(singleData)) {
+                  const val = singleData[key];
+                  if (val && typeof val === 'object' && 'connect' in val && val.connect?.id) {
+                    parsedData[`${key}Id`] = val.connect.id;
+                  } else {
+                    parsedData[key] = val;
+                  }
+                }
+
+                const newRecord = {
+                  id: singleData.id || `${modelName}-${Math.random().toString(36).substring(7)}`,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                  ...parsedData
+                };
+
+                store[modelName].push(newRecord);
+                createdRecords.push(newRecord);
+              }
+
+              const result = Array.isArray(data) ? createdRecords : createdRecords[0];
+              return resolveIncludes(modelName, result, args?.include);
+            }
+
+            if (prop === 'update' || prop === 'updateMany') {
+              const data = args?.data ?? {};
+              const parsedData: Record<string, any> = {};
+              for (const key of Object.keys(data)) {
+                const val = data[key];
+                if (val && typeof val === 'object' && 'connect' in val && val.connect?.id) {
+                  parsedData[`${key}Id`] = val.connect.id;
+                } else {
+                  parsedData[key] = val;
+                }
+              }
+
+              const items = store[modelName];
+              if (prop === 'update') {
+                const item = items.find(item => matchesFilter(item, args?.where));
+                if (item) {
+                  Object.assign(item, parsedData, { updatedAt: new Date() });
+                  return resolveIncludes(modelName, item, args?.include);
+                }
+                throw new Error(`Record to update not found in ${modelName}`);
+              } else {
+                const matching = items.filter(item => matchesFilter(item, args?.where));
+                matching.forEach(item => {
+                  Object.assign(item, parsedData, { updatedAt: new Date() });
+                });
+                return { count: matching.length };
+              }
+            }
+
+            if (prop === 'delete' || prop === 'deleteMany') {
+              const items = store[modelName];
+              if (prop === 'delete') {
+                const index = items.findIndex(item => matchesFilter(item, args?.where));
+                if (index !== -1) {
+                  const deleted = items.splice(index, 1)[0];
+                  return resolveIncludes(modelName, deleted, args?.include);
+                }
+                throw new Error(`Record to delete not found in ${modelName}`);
+              } else {
+                const initialLength = items.length;
+                store[modelName] = items.filter(item => !matchesFilter(item, args?.where));
+                const deletedCount = initialLength - store[modelName].length;
+                return { count: deletedCount };
+              }
+            }
+
+            // Fallback
             const data = args?.data ?? {};
-            
             const parsedData: Record<string, any> = {};
             for (const key of Object.keys(data)) {
               const val = data[key];
@@ -194,14 +338,12 @@ function createModelProxy(name: string): any {
                 parsedData[key] = val;
               }
             }
-
             const newRecord = {
               id: `${modelName}-${Math.random().toString(36).substring(7)}`,
               createdAt: new Date(),
               updatedAt: new Date(),
               ...parsedData
             };
-
             store[modelName].push(newRecord);
             return resolveIncludes(modelName, newRecord, args?.include);
           };

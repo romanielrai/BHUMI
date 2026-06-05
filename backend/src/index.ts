@@ -13,11 +13,28 @@ const leadRoutes = require('./routes/leads').default;
 const dashboardRoutes = require('./routes/dashboard').default;
 const chatbotRoutes = require('./routes/chatbot').default;
 const voiceRoutes = require('./routes/voice').default;
+const superadminRoutes = require('./routes/superadmin').default;
+const adminRoutes = require('./routes/admin').default;
 const app = express();
 
 app.use(helmet());
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001'
+];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+  if (process.env.FRONTEND_URL.includes('localhost')) {
+    allowedOrigins.push(process.env.FRONTEND_URL.replace('localhost', '127.0.0.1'));
+  } else if (process.env.FRONTEND_URL.includes('127.0.0.1')) {
+    allowedOrigins.push(process.env.FRONTEND_URL.replace('127.0.0.1', 'localhost'));
+  }
+}
+
 app.use(cors({ 
-  origin: process.env.FRONTEND_URL ?? ['http://localhost:3000', 'http://localhost:3001'],
+  origin: allowedOrigins,
   credentials: true 
 }));
 app.use(express.json());
@@ -27,6 +44,8 @@ app.use('/api/leads', leadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/voice', voiceRoutes);
+app.use('/api/superadmin', superadminRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
