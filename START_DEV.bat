@@ -16,6 +16,11 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
+REM Configure npm script-shell to cmd to bypass PowerShell Execution Policy blocks
+echo Configuring npm to use Command Prompt...
+call npm.cmd config set script-shell cmd >nul 2>&1
+echo.
+
 REM Kill any existing processes on ports 3001 and 4000
 echo Cleaning up ports 3001 and 4000...
 call npx.cmd -y kill-port 3001 4000 >nul 2>&1
