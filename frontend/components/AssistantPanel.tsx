@@ -230,7 +230,7 @@ export default function AssistantPanel() {
             Talk to our AI growth specialist.
           </h2>
           <p className="mt-1.5 text-sm text-foreground/70">
-            Ask about pricing, services, book a demo, or ask anything — type or use your voice.
+            Ask about pricing, services, guarantees, or book a demo strategy call.
           </p>
         </div>
 
@@ -240,21 +240,14 @@ export default function AssistantPanel() {
             <button
               onClick={toggleVoice}
               title={listening ? 'Stop listening' : 'Start voice input'}
-              className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm transition-all duration-300 ${
+              className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-semibold transition-all duration-300 ${
                 listening
                   ? 'border-red-500/30 bg-red-950/20 text-red-300 hover:bg-red-950/30'
                   : 'border-gold/20 bg-gold/5 text-gold hover:bg-gold/10 hover:shadow-[0_0_16px_rgba(207,199,186,0.15)]'
               }`}
             >
-              {listening ? <MicOff size={15} /> : <Mic size={15} />}
+              {listening ? <MicOff size={14} /> : <Mic size={14} />}
               <span>{listening ? 'Stop' : 'Voice'}</span>
-              {listening && (
-                <span className="flex gap-0.5 items-end ml-1">
-                  {[0,0.1,0.2,0.1,0].map((d, i) => (
-                    <WaveBar key={i} active={true} delay={d} />
-                  ))}
-                </span>
-              )}
             </button>
           )}
           <button
@@ -266,168 +259,148 @@ export default function AssistantPanel() {
                 : 'border-white/5 bg-white/3 text-white/30'
             }`}
           >
-            {speakEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+            {speakEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
           </button>
           <button
             onClick={resetChat}
             title="Reset conversation"
             className="rounded-full border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-foreground transition hover:bg-white/10"
           >
-            <RotateCcw size={15} />
+            <RotateCcw size={14} />
           </button>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-[1fr_300px] xl:grid-cols-[1fr_320px]">
-        {/* ── Chat window ── */}
-        <div className="flex flex-col border-r border-white/10">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[340px] max-h-[420px]">
-            <AnimatePresence initial={false}>
-              {messages.map((msg) => (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-                >
-                  {/* Avatar */}
-                  <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
-                    msg.role === 'assistant' ? 'bg-gold/10 text-gold' : 'bg-white/10 text-white'
-                  }`}>
-                    {msg.role === 'assistant' ? <Bot size={15} /> : <User size={15} />}
-                  </div>
-                  {/* Bubble */}
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                    msg.role === 'assistant'
-                      ? 'bg-[#08122e] border border-white/8 text-foreground/90 rounded-tl-sm'
-                      : 'bg-gold/10 border border-gold/20 text-white rounded-tr-sm'
-                  }`}>
-                    {msg.text.split('\n').map((line, i) => (
-                      <p key={i} className={i > 0 ? 'mt-2' : ''}>
-                        {line.replace(/\*\*(.*?)\*\*/g, '$1')}
-                      </p>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
-
-              {/* Typing indicator */}
-              {loading && (
-                <motion.div
-                  key="typing"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="flex gap-3"
-                >
-                  <div className="h-8 w-8 rounded-full bg-gold/10 text-gold flex items-center justify-center flex-shrink-0">
-                    <Bot size={15} />
-                  </div>
-                  <div className="bg-[#08122e] border border-white/8 rounded-2xl rounded-tl-sm px-4 py-3.5 flex items-center gap-1.5">
-                    {[0, 0.15, 0.3].map((d, i) => (
-                      <motion.span
-                        key={i}
-                        className="h-1.5 w-1.5 rounded-full bg-gold/60"
-                        animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
-                        transition={{ duration: 0.9, delay: d, repeat: Infinity }}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Voice transcript preview */}
-          <AnimatePresence>
-            {(listening || transcript) && (
+      <div className="flex flex-col w-full bg-[#06101f]/30">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 min-h-[360px] max-h-[460px]">
+          <AnimatePresence initial={false}>
+            {messages.map((msg) => (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="border-t border-white/10 bg-red-950/10 px-5 py-3"
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-400" />
-                  </span>
-                  <p className="text-xs text-white/70">
-                    {listening ? (transcript || 'Listening… speak now') : transcript}
-                  </p>
+                {/* Avatar */}
+                <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
+                  msg.role === 'assistant' ? 'bg-gold/10 text-gold' : 'bg-white/10 text-white'
+                }`}>
+                  {msg.role === 'assistant' ? <Bot size={15} /> : <User size={15} />}
+                </div>
+                {/* Bubble */}
+                <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  msg.role === 'assistant'
+                    ? 'bg-[#08122e] border border-white/8 text-foreground/90 rounded-tl-sm'
+                    : 'bg-gold/10 border border-gold/20 text-white rounded-tr-sm'
+                }`}>
+                  {msg.text.split('\n').map((line, i) => (
+                    <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                      {line.replace(/\*\*(.*?)\*\*/g, '$1')}
+                    </p>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+
+            {/* Typing indicator */}
+            {loading && (
+              <motion.div
+                key="typing"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex gap-3"
+              >
+                <div className="h-8 w-8 rounded-full bg-gold/10 text-gold flex items-center justify-center flex-shrink-0">
+                  <Bot size={15} />
+                </div>
+                <div className="bg-[#08122e] border border-white/8 rounded-2xl rounded-tl-sm px-4 py-3.5 flex items-center gap-1.5">
+                  {[0, 0.15, 0.3].map((d, i) => (
+                    <motion.span
+                      key={i}
+                      className="h-1.5 w-1.5 rounded-full bg-gold/60"
+                      animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
+                      transition={{ duration: 0.9, delay: d, repeat: Infinity }}
+                    />
+                  ))}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Input bar */}
-          <div className="border-t border-white/10 p-4">
-            <div className="flex gap-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(input); }}
-                placeholder="Type a message or click Voice…"
-                disabled={loading || listening}
-                className="flex-1 rounded-2xl border border-white/10 bg-[#0c1433] px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20 transition disabled:opacity-50"
-              />
-              <button
-                onClick={() => sendMessage(input)}
-                disabled={loading || !input.trim()}
-                className="inline-flex items-center justify-center rounded-full bg-gold px-4 py-3 text-background transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_20px_rgba(207,199,186,0.3)] disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Send size={16} />
-              </button>
-            </div>
-          </div>
+          <div ref={bottomRef} />
         </div>
 
-        {/* ── Right sidebar: Quick prompts + waveform ── */}
-        <div className="flex flex-col gap-4 p-5 bg-[#06101f]/50">
-          {/* Voice waveform display */}
-          <div className="rounded-2xl border border-white/8 bg-[#040a1e] px-4 py-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/40">Voice agent</p>
-              <span className={`text-xs ${loading ? 'text-gold animate-pulse' : 'text-white/30'}`}>
-                {loading ? 'Processing…' : listening ? 'Listening…' : 'Ready'}
-              </span>
-            </div>
-            <div className="flex h-10 items-end justify-between gap-0.5">
-              {Array.from({ length: 24 }).map((_, i) => (
-                <WaveBar key={i} active={loading || listening} delay={i * 0.04} />
-              ))}
-            </div>
-          </div>
+        {/* Voice transcript preview + Waveform */}
+        <AnimatePresence>
+          {(listening || transcript || loading) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="border-t border-white/5 bg-[#030816]/60 px-6 py-3.5 flex items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="relative flex h-2 w-2 flex-shrink-0">
+                  <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
+                    listening ? 'bg-red-400' : 'bg-gold/60'
+                  }`} />
+                  <span className={`relative inline-flex h-2 w-2 rounded-full ${
+                    listening ? 'bg-red-400' : 'bg-gold'
+                  }`} />
+                </span>
+                <p className="text-xs text-white/70 font-mono">
+                  {listening ? (transcript || 'Listening… speak now') : loading ? 'AI Specialist is thinking…' : transcript}
+                </p>
+              </div>
+              <div className="flex h-5 items-end justify-end gap-0.5 flex-shrink-0">
+                {Array.from({ length: 18 }).map((_, i) => (
+                  <WaveBar key={i} active={loading || listening} delay={i * 0.04} />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* Quick prompts */}
-          <div>
-            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-white/40">Quick prompts</p>
-            <div className="space-y-2">
-              {quickPrompts.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => sendMessage(p)}
-                  disabled={loading}
-                  className="w-full rounded-xl border border-white/8 bg-white/5 px-3 py-2.5 text-left text-xs text-foreground/80 transition-all duration-200 hover:border-gold/20 hover:bg-gold/5 hover:text-gold disabled:opacity-40"
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Quick prompts chips directly above input */}
+        <div className="border-t border-white/5 px-6 pt-4 flex flex-wrap gap-2">
+          {quickPrompts.map((p) => (
+            <button
+              key={p}
+              onClick={() => sendMessage(p)}
+              disabled={loading}
+              className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-xs text-foreground/80 transition-all duration-200 hover:border-gold/30 hover:bg-gold/5 hover:text-gold disabled:opacity-40"
+            >
+              {p}
+            </button>
+          ))}
+        </div>
 
-          {/* Company context note */}
-          <div className="mt-auto rounded-2xl border border-gold/10 bg-gold/5 p-4">
-            <p className="text-xs font-semibold text-gold mb-1">Company Script Active</p>
-            <p className="text-xs text-foreground/60 leading-relaxed">
-              This AI responds as an AI Growth Systems consultant — pricing, services, objection handling, and bookings.
-            </p>
+        {/* Input bar */}
+        <div className="p-6">
+          <div className="flex gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(input); }}
+              placeholder={listening ? "Listening..." : "Ask our AI specialist a question…"}
+              disabled={loading || listening}
+              className="flex-1 rounded-2xl border border-white/10 bg-[#0c1433]/80 px-4 py-3.5 text-sm text-white placeholder-white/30 outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20 transition disabled:opacity-50"
+            />
+            <button
+              onClick={() => sendMessage(input)}
+              disabled={loading || !input.trim()}
+              className="inline-flex items-center justify-center rounded-2xl bg-gold px-5 py-3.5 text-background font-bold transition hover:brightness-105 hover:shadow-[0_0_20px_rgba(207,199,186,0.25)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Send size={15} />
+            </button>
           </div>
+          <p className="mt-3 text-center text-3xs uppercase tracking-widest text-white/30">
+            Trained AI Specialist. Prepared on services, pricing structure, and platform guarantees.
+          </p>
         </div>
       </div>
     </section>
