@@ -132,7 +132,7 @@ export default function ContactSection() {
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Jane Doe"
+                        placeholder=""
                         className="w-full rounded-2xl bg-transparent py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/20"
                       />
                     </div>
@@ -149,7 +149,7 @@ export default function ContactSection() {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="jane@company.com"
+                        placeholder=""
                         className="w-full rounded-2xl bg-transparent py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/20"
                       />
                     </div>
@@ -168,7 +168,7 @@ export default function ContactSection() {
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+1 (555) 0199"
+                        placeholder=""
                         className="w-full rounded-2xl bg-transparent py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/20"
                       />
                     </div>
@@ -185,7 +185,7 @@ export default function ContactSection() {
                         type="text"
                         value={business}
                         onChange={(e) => setBusiness(e.target.value)}
-                        placeholder="Enterprise Inc."
+                        placeholder=""
                         className="w-full rounded-2xl bg-transparent py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/20"
                       />
                     </div>

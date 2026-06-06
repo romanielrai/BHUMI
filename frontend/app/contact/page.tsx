@@ -92,7 +92,7 @@ export default function ContactPage() {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Jane Doe"
+                      placeholder=""
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -103,7 +103,7 @@ export default function ContactPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="jane@company.com"
+                      placeholder=""
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -117,7 +117,7 @@ export default function ContactPage() {
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+1 (555) 0199"
+                      placeholder=""
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -128,7 +128,7 @@ export default function ContactPage() {
                       required
                       value={business}
                       onChange={(e) => setBusiness(e.target.value)}
-                      placeholder="Enterprise Inc."
+                      placeholder=""
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
