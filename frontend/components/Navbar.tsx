@@ -256,7 +256,7 @@ export default function Navbar() {
                   href="/login"
                   className="rounded-full border border-gold/20 bg-gold/5 px-5 py-2.5 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold/10 hover:shadow-[0_0_20px_rgba(207,199,186,0.2)] hover:scale-[1.03]"
                 >
-                  Client Login
+                  Portal Login
                 </Link>
               </div>
             )}
@@ -345,7 +345,7 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                       className="block w-full rounded-full bg-gold px-5 py-3 text-center text-sm font-semibold text-background transition hover:brightness-95"
                     >
-                      Client Login
+                      Portal Login
                     </Link>
                   </>
                 )}
