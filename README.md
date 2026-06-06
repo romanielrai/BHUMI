@@ -4,6 +4,9 @@
 
 Enterprise AI automation platform for AI receptionists, missed call recovery, lead reactivation, and appointment setters.
 
+> [!NOTE]
+> The frontend for this application is configured to run on port **`5504`** (instead of standard `3001`) to match the development environment setup and prevent port conflicts.
+
 ---
 
 ## ⚡ QUICK START (30 seconds)
