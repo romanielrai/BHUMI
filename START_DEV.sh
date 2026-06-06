@@ -14,7 +14,7 @@ fi
 
 # Kill any existing processes on ports 3001 and 4000
 echo "Cleaning up ports..."
-npx kill-port 3001 4000 2>/dev/null || true
+npx -y kill-port 3001 4000 2>/dev/null || true
 
 # Start the development servers
 echo ""

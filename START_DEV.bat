@@ -18,7 +18,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM Kill any existing processes on ports 3001 and 4000
 echo Cleaning up ports 3001 and 4000...
-call npx.cmd kill-port 3001 4000 >nul 2>&1
+call npx.cmd -y kill-port 3001 4000 >nul 2>&1
 
 REM Start the development servers
 echo.
