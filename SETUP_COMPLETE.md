@@ -16,7 +16,7 @@ Your web application is now **fully functional and running** on localhost. Here'
    - ✅ All models now properly configured
 
 ### 3. **Servers Running**
-   - ✅ **Next.js Frontend**: http://localhost:5504
+   - ✅ **Next.js Frontend**: http://localhost:3001
    - ✅ **Express API Server**: http://localhost:4000
 
 ---
@@ -29,8 +29,8 @@ npm run dev
 ```
 
 This command:
-- Cleans up any stuck processes on ports 5504 and 4000
-- Starts Next.js frontend on port 5504
+- Cleans up any stuck processes on ports 3001 and 4000
+- Starts Next.js frontend on port 3001
 - Starts Express backend on port 4000
 - Runs both concurrently
 
@@ -66,7 +66,7 @@ npm start
 | `OPENAI_API_KEY` | OpenAI API key (optional) | Not set = simulation mode |
 | `TWILIO_ACCOUNT_SID` | Twilio account ID (optional) | Not set = simulation mode |
 | `TWILIO_AUTH_TOKEN` | Twilio auth token (optional) | Not set = simulation mode |
-| `FRONTEND_URL` | CORS allowed origin | `http://localhost:5504` |
+| `FRONTEND_URL` | CORS allowed origin | `http://localhost:3001` |
 | `PORT` | Server port | `4000` |
 | `NODE_ENV` | Environment | `development` |
 
@@ -209,7 +209,7 @@ For production, update these environment variables:
 
 All servers are running and ready to use!
 
-- Frontend: http://localhost:5504
+- Frontend: http://localhost:3001
 - API Server: http://localhost:4000
 - Health Check: http://localhost:4000/api/health
 

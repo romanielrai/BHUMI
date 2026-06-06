@@ -216,7 +216,7 @@ server/
 
 **Frontend** (app/.env.local)
 ```env
-NEXTAUTH_URL=http://localhost:5504
+NEXTAUTH_URL=http://localhost:3001
 NEXTAUTH_SECRET=ai-growth-systems-secret-key-2026-development
 NEXT_PUBLIC_API_URL=http://localhost:4000/api
 ```
@@ -225,7 +225,7 @@ NEXT_PUBLIC_API_URL=http://localhost:4000/api
 ```env
 NODE_ENV=development
 PORT=4000
-FRONTEND_URL=http://localhost:5504
+FRONTEND_URL=http://localhost:3001
 JWT_SECRET=your-jwt-secret-key-change-in-production
 NEXT_PUBLIC_API_URL=http://localhost:4000/api
 ```
@@ -330,7 +330,7 @@ All files needed to run the application:
 
 1. **Choose your startup method** (see top of this file)
 2. **Run it** (double-click or type command)
-3. **Visit** http://localhost:5504 in your browser
+3. **Visit** http://localhost:3001 in your browser
 
 That's it! Everything is ready to go.
 

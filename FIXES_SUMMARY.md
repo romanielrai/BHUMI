@@ -74,14 +74,14 @@ The application was throwing a JSON parsing error when users tried to sign up or
 ## Testing Checklist
 
 ### Registration
-- ✅ Navigate to `http://localhost:5504/login`
+- ✅ Navigate to `http://localhost:3001/login`
 - ✅ Click "Sign Up"
 - ✅ Enter test credentials
 - ✅ Successfully creates account and auto-logs in
 - ✅ Token stored in localStorage
 
 ### Login
-- ✅ Navigate to `http://localhost:5504/login`
+- ✅ Navigate to `http://localhost:3001/login`
 - ✅ Click "Sign In"
 - ✅ Enter registered credentials
 - ✅ Redirects to dashboard
@@ -101,7 +101,7 @@ The application was throwing a JSON parsing error when users tried to sign up or
 ### Frontend (`app/.env.local`)
 ```env
 NEXT_PUBLIC_API_URL=http://127.0.0.1:4000/api
-NEXTAUTH_URL=http://127.0.0.1:5504
+NEXTAUTH_URL=http://127.0.0.1:3001
 NEXTAUTH_SECRET=your-secret
 ```
 
@@ -110,7 +110,7 @@ NEXTAUTH_SECRET=your-secret
 DATABASE_URL=postgresql://...
 JWT_SECRET=your-jwt-secret
 PORT=4000
-FRONTEND_URL=http://127.0.0.1:5504
+FRONTEND_URL=http://127.0.0.1:3001
 ```
 
 ## Commands to Run

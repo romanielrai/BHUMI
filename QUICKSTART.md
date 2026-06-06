@@ -18,7 +18,7 @@ npm install && npm --workspace app install && npm --workspace server install && 
 
 1. **Installs all dependencies** - Frontend, Backend, and root packages
 2. **Starts both servers automatically**:
-   - Frontend: `http://localhost:5504`
+   - Frontend: `http://localhost:3001`
    - Backend: `http://localhost:4000`
 
 ---
@@ -35,7 +35,7 @@ API server listening on http://localhost:4000
 ### Frontend Ready ✅
 ```
 ▲ Next.js 15.2.3
-- Local:        http://localhost:5504
+- Local:        http://localhost:3001
 ```
 
 ---
@@ -44,7 +44,7 @@ API server listening on http://localhost:4000
 
 Once both servers show "ready":
 
-1. **Open your browser** → `http://localhost:5504`
+1. **Open your browser** → `http://localhost:3001`
 2. **Sign Up or Login**
    - Email: `test@example.com`
    - Password: Any password (auto-creates account)
@@ -68,11 +68,11 @@ Or **Create Your Own** via Sign Up button
 
 ## ❌ Having Issues?
 
-### Error: "Port 5504 already in use"
+### Error: "Port 3001 already in use"
 ```bash
-# Kill the process on port 5504
-# Windows: netstat -ano | findstr :5504
-# Mac/Linux: lsof -i :5504
+# Kill the process on port 3001
+# Windows: netstat -ano | findstr :3001
+# Mac/Linux: lsof -i :3001
 ```
 
 ### Error: "Cannot find module..."

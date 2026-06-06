@@ -66,13 +66,13 @@ npm run dev
 ```
 
 This starts:
-- Frontend: `http://localhost:5504`
+- Frontend: `http://localhost:3001`
 - Backend: `http://localhost:4000`
 
 **Output should show:**
 ```
 ▲ Next.js 15.2.3
-- Local:        http://localhost:5504
+- Local:        http://localhost:3001
 
 API server listening on http://localhost:4000
 ```
@@ -81,7 +81,7 @@ API server listening on http://localhost:4000
 ```bash
 npm --workspace app run dev
 ```
-Starts frontend at `http://localhost:5504`
+Starts frontend at `http://localhost:3001`
 
 ### Option 3: Backend Only
 ```bash
@@ -114,7 +114,7 @@ Expected response:
 ```
 
 ### Step 2: Check Frontend
-Open browser: **http://localhost:5504**
+Open browser: **http://localhost:3001**
 
 You should see:
 - Homepage with services section
@@ -141,7 +141,7 @@ You should see:
 ### Frontend (.env.local)
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:4000/api
-NEXTAUTH_URL=http://localhost:5504
+NEXTAUTH_URL=http://localhost:3001
 NEXTAUTH_SECRET=ai-growth-systems-secret-key-2026-development
 ```
 
@@ -149,7 +149,7 @@ NEXTAUTH_SECRET=ai-growth-systems-secret-key-2026-development
 ```env
 NODE_ENV=development
 PORT=4000
-FRONTEND_URL=http://localhost:5504
+FRONTEND_URL=http://localhost:3001
 JWT_SECRET=your-jwt-secret-key-change-in-production
 ```
 
@@ -165,18 +165,18 @@ Both are already configured - no changes needed to run locally.
 - Restart terminal after installing
 - Verify: `node --version`
 
-### Issue: "Port 5504 already in use"
-**Solution**: Kill the process using port 5504
+### Issue: "Port 3001 already in use"
+**Solution**: Kill the process using port 3001
 
 **Windows:**
 ```bash
-netstat -ano | findstr :5504
+netstat -ano | findstr :3001
 taskkill /PID <PID_NUMBER> /F
 ```
 
 **Mac/Linux:**
 ```bash
-lsof -i :5504
+lsof -i :3001
 kill -9 <PID>
 ```
 
@@ -335,4 +335,4 @@ You're all set. Start with:
 npm run dev
 ```
 
-Then go to http://localhost:5504 🚀
+Then go to http://localhost:3001 🚀

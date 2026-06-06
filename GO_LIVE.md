@@ -34,7 +34,7 @@ Choose ONE method:
 ## ⏱️ WHAT HAPPENS
 
 1. **Installs dependencies** (first time only, ~1 min)
-2. **Starts frontend server** on http://localhost:5504
+2. **Starts frontend server** on http://localhost:3001
 3. **Starts backend server** on http://localhost:4000
 4. **Browser opens automatically**
 5. You're live! 🎉
@@ -95,7 +95,7 @@ Choose ONE method:
 ### Immediate (Now)
 1. Choose your startup method above
 2. Run the command/script
-3. Visit http://localhost:5504
+3. Visit http://localhost:3001
 4. Test the application
 
 ### Short Term (Today)
@@ -120,7 +120,7 @@ Choose ONE method:
 
 ## 💡 REMEMBER
 
-- **Frontend port**: 5504
+- **Frontend port**: 3001
 - **Backend port**: 4000
 - **Test email**: superadmin@gmail.com
 - **Test password**: AdminPass123!
@@ -155,7 +155,7 @@ Everything is done. Everything works. Everything is documented.
 **Mac/Linux?** → Run ./run.sh
 **Terminal?** → Run npm run dev
 
-Then visit: **http://localhost:5504**
+Then visit: **http://localhost:3001**
 
 ---
 

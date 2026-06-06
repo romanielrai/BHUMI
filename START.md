@@ -28,7 +28,7 @@ npm run dev
 ```
 
 This starts BOTH servers at once:
-- **Frontend**: http://localhost:5504
+- **Frontend**: http://localhost:3001
 - **Backend**: http://localhost:4000
 
 ---
@@ -36,7 +36,7 @@ This starts BOTH servers at once:
 ## ✅ STEP 3: Open in Browser
 
 1. Open your web browser
-2. Go to: **http://localhost:5504**
+2. Go to: **http://localhost:3001**
 3. You should see the AI Growth Systems homepage
 4. Click "Sign In" or "Sign Up" to get started
 
@@ -89,11 +89,11 @@ npm --workspace app run dev
 
 **Port already in use?**
 - Backend uses port 4000
-- Frontend uses port 5504
+- Frontend uses port 3001
 - If busy, check what's using those ports and stop it
 
 ---
 
 ## ✨ Everything Ready?
 
-Go to **http://localhost:5504** and enjoy! 🎉
+Go to **http://localhost:3001** and enjoy! 🎉

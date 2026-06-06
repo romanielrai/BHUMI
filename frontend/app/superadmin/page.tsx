@@ -1009,7 +1009,7 @@ export default function SuperAdminPage() {
                         </div>
                         <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
                           <span className="text-3xs text-white/40 block">PORT BINDINGS</span>
-                          <span className="text-md font-bold text-green-400 mt-1 block">5504, 4000</span>
+                          <span className="text-md font-bold text-green-400 mt-1 block">3001, 4000</span>
                         </div>
                       </div>
                       
@@ -1018,7 +1018,7 @@ export default function SuperAdminPage() {
                         <p className="text-white/40">[2026-06-05 18:21] Server listener setup complete.</p>
                         <p className="text-white/40">[2026-06-05 18:21] Loaded environment variables from .env</p>
                         <p className="text-green-400">[2026-06-05 18:22] API server listening on http://127.0.0.1:4000</p>
-                        <p className="text-green-400">[2026-06-05 18:22] Vite frontend server listening on http://127.0.0.1:5504</p>
+                        <p className="text-green-400">[2026-06-05 18:22] Vite frontend server listening on http://127.0.0.1:3001</p>
                         <p className="text-purple-400">[info] CORS credentials configuration applied. Allow origin *</p>
                         <p className="text-white/40">[info] Heartbeat probe: DB ping took {healthData.metrics.dbLatencyMs}ms</p>
                         <p className="text-white/80">[query] GET /api/dashboard/superadmin - 200 OK (latency: {healthData.metrics.apiLatencyMs}ms)</p>

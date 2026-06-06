@@ -21,9 +21,9 @@ echo [OK] Node.js found:
 node --version
 echo.
 
-REM Kill anything on ports 5504 / 4000
-echo Freeing ports 5504 and 4000...
-for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr :5504') do (
+REM Kill anything on ports 3001 / 4000
+echo Freeing ports 3001 and 4000...
+for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr :3001') do (
     taskkill /F /PID %%a >nul 2>&1
 )
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr :4000') do (
@@ -59,7 +59,7 @@ if not exist "backend\node_modules\express" (
 
 echo ====================================================
 echo   Starting servers...
-echo   Frontend:  http://localhost:5504
+echo   Frontend:  http://localhost:3001
 echo   Backend:   http://localhost:4000
 echo   Health:    http://localhost:4000/api/health
 echo ====================================================
@@ -78,10 +78,10 @@ REM Wait 3 seconds then start frontend
 timeout /t 3 /nobreak >nul
 
 REM Start frontend in a separate window
-start "Frontend App - Port 5504" cmd /k "cd /d "%~dp0frontend" && npx next dev -p 5504"
+start "Frontend App - Port 3001" cmd /k "cd /d "%~dp0frontend" && npx next dev -p 3001"
 
 echo.
 echo Both servers are starting in separate windows.
-echo Wait ~15 seconds then open: http://localhost:5504
+echo Wait ~15 seconds then open: http://localhost:3001
 echo.
 pause

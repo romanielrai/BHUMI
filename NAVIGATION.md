@@ -126,7 +126,7 @@
 1. **START_HERE.md** (2 min) - Overview
 2. **STARTUP.md** (1 min) - Choose method
 3. **RUN COMMAND** (30 sec) - Start app
-4. **Visit http://localhost:5504** - See app
+4. **Visit http://localhost:3001** - See app
 5. **Login/SignUp** - Test features
 6. **QUICKSTART.md** (2 min) - Learn commands
 7. **README.md** (5 min) - Project details
@@ -204,7 +204,7 @@ Read: COMPLETE_SETUP.md → Troubleshooting section
 
 2. Wait 15 seconds for both servers
 
-3. Browser opens to http://localhost:5504
+3. Browser opens to http://localhost:3001
 
 4. Sign up or login with:
    Email: superadmin@gmail.com

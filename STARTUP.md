@@ -36,7 +36,7 @@ npm run dev
 
 ```
 ▲ Next.js 15.2.3
-- Local:        http://localhost:5504
+- Local:        http://localhost:3001
 - Environments: .env.local
 
 [server] npm info it worked if it ends with ok
@@ -49,7 +49,7 @@ When you see BOTH messages: ✅ **YOU'RE READY!**
 
 ## 🌐 OPEN YOUR BROWSER
 
-1. **Go to:** http://localhost:5504
+1. **Go to:** http://localhost:3001
 2. **You should see:**
    - AI Growth Systems homepage
    - Navigation menu
@@ -89,9 +89,9 @@ You'll see:
 - Close and reopen terminal
 - Try again
 
-### Issue 2: "Port 5504 already in use"
-- Windows: Run `netstat -ano | findstr :5504`
-- Mac/Linux: Run `lsof -i :5504`
+### Issue 2: "Port 3001 already in use"
+- Windows: Run `netstat -ano | findstr :3001`
+- Mac/Linux: Run `lsof -i :3001`
 - Kill the process or wait a moment and try again
 
 ### Issue 3: "Backend not connecting"
@@ -167,7 +167,7 @@ Everything is ready. Pick your startup method and go!
 ### Terminal (any)?
 → Run `npm run dev`
 
-Then visit: **http://localhost:5504**
+Then visit: **http://localhost:3001**
 
 ---
 

@@ -41,7 +41,7 @@ Mac/Linux: ./verify.sh
 
 2. **Open your browser**:
    ```
-   http://localhost:5504
+   http://localhost:3001
    ```
 
 3. **Sign in with test account**:
@@ -69,11 +69,11 @@ Mac/Linux: ./verify.sh
 ### "Port already in use"
 ```bash
 # Windows
-netstat -ano | findstr :5504
+netstat -ano | findstr :3001
 taskkill /PID <number> /F
 
 # Mac/Linux
-lsof -i :5504
+lsof -i :3001
 kill -9 <number>
 ```
 
@@ -128,7 +128,7 @@ kill -9 <number>
 
 | Component | Port | Status |
 |-----------|------|--------|
-| Frontend | 5504 | Ready ✅ |
+| Frontend | 3001 | Ready ✅ |
 | Backend | 4000 | Ready ✅ |
 | Database | In-Memory | Ready ✅ |
 | Auth | JWT | Ready ✅ |
@@ -193,6 +193,6 @@ No configuration needed. No additional setup. Just click and go.
 npm run dev
 ```
 
-Then visit: **http://localhost:5504**
+Then visit: **http://localhost:3001**
 
 **Enjoy!** 🎉

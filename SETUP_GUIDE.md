@@ -21,7 +21,7 @@ npm --workspace backend install
 **For Frontend** (`frontend/.env.local`):
 ```env
 NEXT_PUBLIC_API_URL=http://127.0.0.1:4000/api
-NEXTAUTH_URL=http://127.0.0.1:5504
+NEXTAUTH_URL=http://127.0.0.1:3001
 NEXTAUTH_SECRET=your-secret-key-here
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
@@ -33,7 +33,7 @@ DATABASE_URL=file:./dev.db
 JWT_SECRET=your-jwt-secret-key
 NODE_ENV=development
 PORT=4000
-FRONTEND_URL=http://127.0.0.1:5504
+FRONTEND_URL=http://127.0.0.1:3001
 
 # Optional AI Services
 OPENAI_API_KEY=your-openai-api-key
@@ -59,11 +59,11 @@ npm --workspace backend run dev
 **Terminal 2 - Frontend:**
 ```bash
 npm --workspace frontend run dev
-# Frontend runs on http://127.0.0.1:5504
+# Frontend runs on http://127.0.0.1:3001
 ```
 
 ### Verify Setup
-- Frontend: http://127.0.0.1:5504
+- Frontend: http://127.0.0.1:3001
 - Backend API: http://127.0.0.1:4000/api
 - Health Check: http://127.0.0.1:4000/api/health
 

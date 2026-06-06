@@ -83,21 +83,21 @@ cd app && npm run dev
 ```
 
 ### 2. Test Dashboard
-1. Login at `http://localhost:5504/login`
+1. Login at `http://localhost:3001/login`
 2. Dashboard should now load without errors
 3. Metrics cards should display with actual data
 4. Leads table should populate
 5. Refresh button should work
 
 ### 3. Test Login
-1. Go to `http://localhost:5504/login`
+1. Go to `http://localhost:3001/login`
 2. Click Sign Up
 3. Enter all required fields
 4. Form should submit successfully
 5. Auto-login and redirect to dashboard
 
 ### 4. Test Contact Form
-1. Go to `http://localhost:5504` (home page)
+1. Go to `http://localhost:3001` (home page)
 2. Scroll to Contact section
 3. Fill form and submit
 4. Should see success message

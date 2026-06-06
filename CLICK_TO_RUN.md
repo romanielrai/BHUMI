@@ -5,7 +5,7 @@
 ### For Windows Users
 1. **Double-click** → `RUN_ME_FIRST.bat`
 2. Wait for "API server listening" + "Next.js ready"
-3. Browser opens → **http://localhost:5504**
+3. Browser opens → **http://localhost:3001**
 4. ✅ You're live!
 
 ### For Mac/Linux Users
@@ -15,7 +15,7 @@
 chmod +x run.sh && ./run.sh
 ```
 3. Wait for "API server listening" + "Next.js ready"
-4. **Open browser** → `http://localhost:5504`
+4. **Open browser** → `http://localhost:3001`
 5. ✅ You're live!
 
 ### For Any Code Editor (VS Code, IntelliJ, etc.)
@@ -25,7 +25,7 @@ chmod +x run.sh && ./run.sh
 npm run dev
 ```
 3. Wait 10-15 seconds for both servers to start
-4. **Click the link** shown or go to `http://localhost:5504`
+4. **Click the link** shown or go to `http://localhost:3001`
 5. ✅ You're live!
 
 ---
@@ -36,7 +36,7 @@ npm run dev
 ```
 [Watching for file changes...]
 ▲ Next.js 15.2.3
-- Local: http://localhost:5504
+- Local: http://localhost:3001
 
 [server] npm info it worked if it ends with ok
 [server] API server listening on http://localhost:4000
@@ -66,13 +66,13 @@ Or **Sign Up** to create your own instantly
 - Install Node.js: https://nodejs.org/
 - Close and reopen terminal
 
-### Problem 2: "Port 5504 already in use"
+### Problem 2: "Port 3001 already in use"
 ```bash
 # Windows
-netstat -ano | findstr :5504
+netstat -ano | findstr :3001
 
 # Mac/Linux
-lsof -i :5504
+lsof -i :3001
 ```
 Then kill the process or use different port:
 ```bash
@@ -113,7 +113,7 @@ Press `CTRL+C` in terminal
 
 | Component | Port | Status |
 |-----------|------|--------|
-| Frontend | 5504 | Running |
+| Frontend | 3001 | Running |
 | Backend | 4000 | Running |
 | Database | In-Memory | Included |
 | Auth | JWT | Configured |

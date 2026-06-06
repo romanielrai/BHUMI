@@ -5,7 +5,7 @@
 Enterprise AI automation platform for AI receptionists, missed call recovery, lead reactivation, and appointment setters.
 
 > [!NOTE]
-> The frontend for this application is configured to run on port **`5504`** (instead of standard `3001`) to match the development environment setup and prevent port conflicts.
+> The frontend for this application is configured to run on port **`3001`** (instead of standard `3001`) to match the development environment setup and prevent port conflicts.
 
 ---
 
@@ -19,7 +19,7 @@ Enterprise AI automation platform for AI receptionists, missed call recovery, le
 
 **Anywhere:** `npm run dev`
 
-Then open: **http://localhost:5504**
+Then open: **http://localhost:3001**
 
 ✅ Done! You're live.
 
@@ -70,7 +70,7 @@ Then open: **http://localhost:5504**
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://localhost:5504 |
+| Frontend | http://localhost:3001 |
 | Backend | http://localhost:4000 |
 | API Health | http://localhost:4000/api/health |
 

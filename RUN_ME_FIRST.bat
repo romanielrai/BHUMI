@@ -39,7 +39,7 @@ echo ======================================
 echo   SERVERS STARTING...
 echo ======================================
 echo.
-echo Frontend will open on: http://localhost:5504
+echo Frontend will open on: http://localhost:3001
 echo Backend running on:   http://localhost:4000
 echo.
 echo Press CTRL+C to stop both servers

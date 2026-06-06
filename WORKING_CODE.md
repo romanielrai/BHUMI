@@ -10,7 +10,7 @@ OPENAI_API_KEY="sk-your-openai-api-key-here"
 TWILIO_ACCOUNT_SID="your-twilio-account-sid"
 TWILIO_AUTH_TOKEN="your-twilio-auth-token"
 TWILIO_PHONE_NUMBER="+1234567890"
-FRONTEND_URL="http://localhost:5504"
+FRONTEND_URL="http://localhost:3001"
 PORT=4000
 NODE_ENV="development"
 ```
@@ -18,7 +18,7 @@ NODE_ENV="development"
 ### 2. Frontend Configuration (`app/.env.local`)
 ```env
 NEXT_PUBLIC_API_URL="http://localhost:4000"
-NEXTAUTH_URL="http://localhost:5504"
+NEXTAUTH_URL="http://localhost:3001"
 NEXTAUTH_SECRET="your-super-secret-nextauth-key-change-in-production"
 ```
 
@@ -216,7 +216,7 @@ The application is ready for production with minimal configuration changes:
 ## Status
 
 🟢 **All systems operational**
-- Frontend: Running on http://localhost:5504
+- Frontend: Running on http://localhost:3001
 - Backend: Running on http://localhost:4000
 - Database: SQLite (auto-created)
 - Ready for development and testing

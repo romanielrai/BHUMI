@@ -58,11 +58,11 @@ echo ""
 
 # Check ports
 echo "[4/5] Checking port availability..."
-if lsof -i :5504 &> /dev/null; then
-    echo "⚠️  WARNING: Port 5504 is already in use"
+if lsof -i :3001 &> /dev/null; then
+    echo "⚠️  WARNING: Port 3001 is already in use"
     echo "You may need to stop the process using it"
 else
-    echo "✅ Port 5504 available"
+    echo "✅ Port 3001 available"
 fi
 echo ""
 
@@ -90,9 +90,9 @@ echo "======================================"
 echo ""
 echo "Next steps:"
 echo ""
-echo "1. Make sure ports 5504 and 4000 are free"
+echo "1. Make sure ports 3001 and 4000 are free"
 echo "2. Run: npm run dev"
-echo "3. Open: http://localhost:5504"
+echo "3. Open: http://localhost:3001"
 echo ""
 echo "Login with:"
 echo "   Email: superadmin@gmail.com"

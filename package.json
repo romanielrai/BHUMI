@@ -6,7 +6,7 @@
     "backend"
   ],
   "scripts": {
-    "clean-ports": "npx kill-port 5504 4000 || true",
+    "clean-ports": "npx kill-port 3001 4000 || true",
     "dev": "npm run clean-ports && concurrently \"npm --workspace frontend run dev\" \"npm --workspace backend run dev\"",
     "dev:app": "npm --workspace frontend run dev",
     "dev:server": "npm --workspace backend run dev",
