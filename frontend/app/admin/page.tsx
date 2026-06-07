@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Users, PhoneCall, LogOut, X, Plus, Sliders, 
   Upload, Link2, MessageSquare, AlertTriangle, PlayCircle
@@ -30,6 +31,7 @@ export default function AgentDashboard() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState<'clients' | 'voice' | 'engine' | 'reactivation' | 'crm' | 'inbox'>('clients');
+  const [user, setUser] = useState<{ name?: string; role?: string; email?: string } | null>(null);
 
   // Client Manager State
   const [clients, setClients] = useState<Client[]>(initialClients);
@@ -88,8 +90,9 @@ export default function AgentDashboard() {
     }
 
     try {
-      const user = JSON.parse(userStr);
-      const role = user.role?.toUpperCase?.() || user.role;
+      const parsedUser = JSON.parse(userStr);
+      setUser(parsedUser);
+      const role = parsedUser.role?.toUpperCase?.() || parsedUser.role;
       if (role === 'ADMIN' || role === 'SUPERADMIN') {
         setAuthorized(true);
       } else {
@@ -212,6 +215,17 @@ export default function AgentDashboard() {
 
   return (
     <main className="mx-auto mt-28 max-w-7xl px-6 pb-24 md:px-12">
+      {user?.role === 'SUPERADMIN' && (
+        <div className="bg-purple-900/30 border border-purple-500/30 text-purple-200 px-5 py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold backdrop-blur-md mb-6">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse" />
+            <span>Logged in as <strong className="text-purple-300">SUPERADMIN</strong>. You are accessing the **Agent / Client Setup (Admin Panel)** view.</span>
+          </div>
+          <Link href="/superadmin" className="rounded-full bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 text-xs transition duration-200">
+            Back to Superadmin Cockpit
+          </Link>
+        </div>
+      )}
       <div className="rounded-[32px] border border-white/10 bg-glass p-6 md:p-10 shadow-glow space-y-8">
         
         {/* Header */}
@@ -219,10 +233,10 @@ export default function AgentDashboard() {
           <div>
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-gold border border-gold/40" />
-              <p className="text-xs uppercase tracking-[0.3em] text-gold font-bold">Agent Dashboard</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-gold font-bold">Agent Dashboard: {user?.name || 'Agent'}</p>
             </div>
-            <h1 className="mt-2 text-2xl font-bold text-white md:text-3xl">Internal Systems & CRM Delivery</h1>
-            <p className="text-xs text-white/50 mt-1">Operational interface to manage clients, voice pipelines, and lead campaigns.</p>
+            <h1 className="mt-2 text-2xl font-bold text-white md:text-3xl">Welcome Back, {user?.name || 'Systems Admin'}</h1>
+            <p className="text-xs text-white/50 mt-1">Role / Profile: {user?.role || 'ADMIN'} Interface ({user?.email})</p>
           </div>
           
           <div className="flex items-center gap-3">

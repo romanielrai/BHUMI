@@ -14,7 +14,7 @@ router.post('/login', async (req, res) => {
     
     const user = await prisma.user.findUnique({ 
       where: { email }, 
-      include: { role: true } 
+      include: { role: true, client: true } 
     });
     
     if (!user) {
@@ -38,7 +38,9 @@ router.post('/login', async (req, res) => {
         id: user.id, 
         email: user.email, 
         name: user.name,
-        role: user.role.name 
+        role: user.role.name,
+        phone: user.client?.contactPhone || '',
+        business: user.client?.companyName || ''
       } 
     });
   } catch (error) {
@@ -67,7 +69,7 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 12);
 
     let clientId: string | undefined = undefined;
-    if (roleName === 'CLIENT' || roleName === 'ADMIN') {
+    if (roleName === 'CLIENT' || roleName === 'ADMIN' || roleName === 'USER') {
       const client = await prisma.client.create({
         data: {
           companyName: businessName || 'My Business',
@@ -90,12 +92,16 @@ router.post('/register', async (req, res) => {
       }
     });
 
+    const client = clientId ? await prisma.client.findUnique({ where: { id: clientId } }) : null;
+
     return res.json({ 
       user: { 
         id: user.id, 
         email: user.email, 
         name: user.name,
-        role: role.name 
+        role: role.name,
+        phone: client?.contactPhone || '',
+        business: client?.companyName || ''
       } 
     });
   } catch (error) {

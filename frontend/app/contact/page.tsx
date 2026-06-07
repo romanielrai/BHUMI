@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Facebook, Mail, MessageCircle, Send, CheckCircle2 } from 'lucide-react';
 
 export default function ContactPage() {
@@ -11,6 +11,21 @@ export default function ContactPage() {
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.name) setName(user.name);
+        if (user.email) setEmail(user.email);
+        if (user.phone) setPhone(user.phone);
+        if (user.business) setBusiness(user.business);
+      } catch (e) {
+        console.error('Failed to parse user details', e);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +92,7 @@ export default function ContactPage() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
                 {status === 'error' && (
                   <div className="rounded-xl border border-red-500/20 bg-red-950/20 p-4 text-xs text-red-300">
                     Failed to submit. Please ensure the backend server is running.
@@ -93,6 +108,7 @@ export default function ContactPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder=""
+                      autoComplete="new-name"
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -104,6 +120,7 @@ export default function ContactPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder=""
+                      autoComplete="new-email"
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -118,6 +135,7 @@ export default function ContactPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder=""
+                      autoComplete="new-phone"
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -129,6 +147,7 @@ export default function ContactPage() {
                       value={business}
                       onChange={(e) => setBusiness(e.target.value)}
                       placeholder=""
+                      autoComplete="new-business"
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>

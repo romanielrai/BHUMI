@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, CheckCircle2, MessageCircle, Mail, Facebook, User, Phone, Briefcase } from 'lucide-react';
 
@@ -12,6 +12,21 @@ export default function ContactSection() {
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.name) setName(user.name);
+        if (user.email) setEmail(user.email);
+        if (user.phone) setPhone(user.phone);
+        if (user.business) setBusiness(user.business);
+      } catch (e) {
+        console.error('Failed to parse user details', e);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +128,7 @@ export default function ContactSection() {
                 </button>
               </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
                 {status === 'error' && (
                   <div className="rounded-xl border border-red-500/20 bg-red-950/20 p-4 text-xs text-red-300">
                     Failed to submit. Please verify the backend server is active.
@@ -133,6 +148,7 @@ export default function ContactSection() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder=""
+                        autoComplete="new-name"
                         className="w-full rounded-2xl bg-transparent py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/20"
                       />
                     </div>
@@ -150,6 +166,7 @@ export default function ContactSection() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder=""
+                        autoComplete="new-email"
                         className="w-full rounded-2xl bg-transparent py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/20"
                       />
                     </div>
@@ -169,6 +186,7 @@ export default function ContactSection() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder=""
+                        autoComplete="new-phone"
                         className="w-full rounded-2xl bg-transparent py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/20"
                       />
                     </div>
@@ -186,6 +204,7 @@ export default function ContactSection() {
                         value={business}
                         onChange={(e) => setBusiness(e.target.value)}
                         placeholder=""
+                        autoComplete="new-business"
                         className="w-full rounded-2xl bg-transparent py-3 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/20"
                       />
                     </div>

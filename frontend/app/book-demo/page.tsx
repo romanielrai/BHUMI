@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CalendarDays, CheckCircle2, Send } from 'lucide-react';
 
@@ -12,6 +12,21 @@ export default function BookDemoPage() {
   const [slot, setSlot] = useState('');
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.name) setName(user.name);
+        if (user.email) setEmail(user.email);
+        if (user.phone) setPhone(user.phone);
+        if (user.business) setBusiness(user.business);
+      } catch (e) {
+        console.error('Failed to parse user details', e);
+      }
+    }
+  }, []);
 
   const timeSlots = [
     'Monday 10:00 AM EST',
@@ -118,7 +133,7 @@ export default function BookDemoPage() {
             {/* Right: Booking form */}
             <section className="rounded-3xl border border-white/10 bg-[#08102e]/60 p-6 md:p-8">
               <h2 className="text-xl font-semibold text-white mb-6">Your Details</h2>
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
                 {status === 'error' && (
                   <div className="rounded-xl border border-red-500/20 bg-red-950/20 p-4 text-xs text-red-300">
                     Booking failed. Please check your details or try again.
@@ -132,6 +147,7 @@ export default function BookDemoPage() {
                       type="text" required value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder=""
+                      autoComplete="new-name"
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -141,6 +157,7 @@ export default function BookDemoPage() {
                       type="email" required value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder=""
+                      autoComplete="new-email"
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -153,6 +170,7 @@ export default function BookDemoPage() {
                       type="tel" required value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder=""
+                      autoComplete="new-phone"
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>
@@ -162,6 +180,7 @@ export default function BookDemoPage() {
                       type="text" required value={business}
                       onChange={(e) => setBusiness(e.target.value)}
                       placeholder=""
+                      autoComplete="new-business"
                       className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090f24] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30"
                     />
                   </label>

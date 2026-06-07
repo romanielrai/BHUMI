@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   PhoneIncoming, Users, TrendingUp, PhoneCall, RefreshCw, 
   Play, Pause, Send, PhoneOutgoing, LogOut, Smartphone, MessageSquare, 
@@ -53,6 +54,7 @@ const mockSMS = [
 export default function CommandCenterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ name?: string; role?: string; email?: string } | null>(null);
 
   // Widget States
   const [callsFeed, setCallsFeed] = useState<CallRecord[]>(mockCalls);
@@ -88,6 +90,16 @@ export default function CommandCenterPage() {
       router.push('/login');
       return;
     }
+
+    try {
+      const parsedUser = JSON.parse(userStr);
+      setUser(parsedUser);
+      const role = parsedUser.role?.toUpperCase?.() || parsedUser.role;
+      if (role === 'USER') {
+        router.push('/dashboard/user');
+        return;
+      }
+    } catch (e) {}
 
     setLoading(false);
 
@@ -220,6 +232,17 @@ export default function CommandCenterPage() {
 
   return (
     <main className="mx-auto mt-28 max-w-7xl px-6 pb-24 md:px-12">
+      {user?.role === 'SUPERADMIN' && (
+        <div className="bg-purple-900/30 border border-purple-500/30 text-purple-200 px-5 py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold backdrop-blur-md mb-6">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse" />
+            <span>Logged in as <strong className="text-purple-300">SUPERADMIN</strong>. You are accessing the **Client Command Center Simulator** view.</span>
+          </div>
+          <Link href="/superadmin" className="rounded-full bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 text-xs transition duration-200">
+            Back to Superadmin Cockpit
+          </Link>
+        </div>
+      )}
       <div className="rounded-[32px] border border-white/10 bg-glass p-6 md:p-10 shadow-glow space-y-8">
         
         {/* Header */}
@@ -227,10 +250,10 @@ export default function CommandCenterPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-gold animate-ping" />
-              <p className="text-xs uppercase tracking-[0.3em] text-gold font-bold">Client Command Center</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-gold font-bold">Logged In User</p>
             </div>
-            <h1 className="mt-2 text-2xl font-bold text-white md:text-3xl">Live Revenue & Call Recovery Portal</h1>
-            <p className="text-xs text-white/50 mt-1">Niche Profile: Septic & Drain Specialists • Stated Revenue: $5M–$15M</p>
+            <h1 className="mt-2 text-2xl font-bold text-white md:text-3xl">{user?.name || 'Welcome Back'}</h1>
+            <p className="text-xs text-white/50 mt-1">Role / Profile: {user?.role || 'CLIENT'} Workspace ({user?.email})</p>
           </div>
           
           <div className="flex items-center gap-3 flex-wrap">

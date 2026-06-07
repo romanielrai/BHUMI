@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { LogOut, Users, PhoneCall, CalendarDays, RefreshCw } from 'lucide-react';
 
 interface MetricData {
@@ -28,6 +29,7 @@ export default function UserDashboardPage() {
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [user, setUser] = useState<{ name?: string; role?: string; email?: string } | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
@@ -45,6 +47,7 @@ export default function UserDashboardPage() {
       if (!metricsResponse.ok) {
         if (metricsResponse.status === 401 || metricsResponse.status === 403) {
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           router.push('/login');
           return;
         }
@@ -68,11 +71,36 @@ export default function UserDashboardPage() {
   }, [router]);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    if (!token || !userStr) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(userStr);
+      setUser(parsedUser);
+      const role = parsedUser.role?.toUpperCase?.() || parsedUser.role;
+      if (role === 'CLIENT') {
+        router.push('/dashboard');
+        return;
+      } else if (role === 'ADMIN') {
+        router.push('/admin');
+        return;
+      }
+    } catch (e) {
+      router.push('/login');
+      return;
+    }
+
     fetchDashboardData();
-  }, [fetchDashboardData]);
+  }, [fetchDashboardData, router]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     router.push('/login');
   };
 
@@ -88,12 +116,27 @@ export default function UserDashboardPage() {
 
   return (
     <main className="mx-auto mt-28 max-w-7xl px-6 pb-24 md:px-12">
+      {user?.role === 'SUPERADMIN' && (
+        <div className="bg-purple-900/30 border border-purple-500/30 text-purple-200 px-5 py-4 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold backdrop-blur-md mb-6">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse" />
+            <span>Logged in as <strong className="text-purple-300">SUPERADMIN</strong>. You are accessing the **User Command Center / Database Sync (User Dashboard)** view.</span>
+          </div>
+          <Link href="/superadmin" className="rounded-full bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 text-xs transition duration-200">
+            Back to Superadmin Cockpit
+          </Link>
+        </div>
+      )}
       <div className="rounded-[32px] border border-white/10 bg-glass p-8 md:p-10 shadow-glow">
         
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-white/5 pb-6">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-400">User Dashboard</p>
-            <h1 className="mt-3 text-3xl md:text-4xl font-semibold text-white">Revenue, calls, and lead performance.</h1>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-slate-400 animate-ping" />
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400 font-bold">Logged In User</p>
+            </div>
+            <h1 className="mt-2 text-2xl font-bold text-white md:text-3xl">Welcome Back, {user?.name || 'User'}</h1>
+            <p className="text-xs text-white/50 mt-1">Role / Profile: {user?.role || 'USER'} Workspace ({user?.email})</p>
           </div>
           <div className="flex items-center gap-3">
             <button 

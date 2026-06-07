@@ -170,6 +170,11 @@ function resolveIncludes(modelName: string, item: any, include: any): any {
       const role = store.role.find(r => r.id === item.roleId);
       resolved.role = role ?? null;
     }
+
+    if (relation === 'client' && modelName === 'user') {
+      const client = store.client.find(c => c.id === item.clientId);
+      resolved.client = client ?? null;
+    }
   }
   return resolved;
 }

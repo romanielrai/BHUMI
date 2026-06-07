@@ -33,6 +33,7 @@ export default function SuperAdminPage() {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [metrics, setMetrics] = useState<MetricData | null>(null);
+  const [user, setUser] = useState<{ name?: string; role?: string; email?: string } | null>(null);
 
   // Active module modal ID
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -115,8 +116,9 @@ export default function SuperAdminPage() {
     }
 
     try {
-      const user = JSON.parse(userStr);
-      const role = user.role?.toUpperCase?.() || user.role;
+      const parsedUser = JSON.parse(userStr);
+      setUser(parsedUser);
+      const role = parsedUser.role?.toUpperCase?.() || parsedUser.role;
       if (role === 'SUPERADMIN') {
         setAuthorized(true);
         fetchDashboardData(token);
@@ -362,14 +364,14 @@ export default function SuperAdminPage() {
       <div className="rounded-[32px] border border-white/10 bg-glass p-8 md:p-10 shadow-glow">
 
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between border-b border-white/5 pb-6">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/10 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-purple-400 mb-3">
-              <ShieldAlert size={12} /> Super Admin Control Center
+              <ShieldAlert size={12} /> Welcome, {user?.name || 'Superadmin'}
             </div>
-            <h1 className="text-3xl md:text-4xl font-semibold text-white">Enterprise system management.</h1>
+            <h1 className="text-3xl md:text-4xl font-semibold text-white">Enterprise system management ({user?.role || 'SUPERADMIN'}).</h1>
             <p className="mt-3 max-w-2xl text-foreground/70 leading-relaxed">
-              Full platform controls for user management, billing, AI configuration, and service health monitoring.
+              Logged in as: <strong className="text-purple-300">{user?.email}</strong>. Full platform controls for user management, billing, AI configuration, and service health monitoring.
             </p>
           </div>
           
@@ -398,6 +400,51 @@ export default function SuperAdminPage() {
               <p className="text-2xl font-semibold text-white">{stat.value}</p>
             </div>
           ))}
+        </div>
+
+        {/* Quick Portals for SUPERADMIN */}
+        <div className="mb-10 rounded-[28px] border border-purple-500/20 bg-purple-950/5 p-6 md:p-8 space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-purple-400" />
+              Platform Command Views
+            </h2>
+            <p className="text-xs text-white/50">
+              Access other dashboards as a system administrator to view lead pipelines, calendar bookings, and voice settings.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Link 
+              href="/admin"
+              className="rounded-2xl border border-white/10 bg-[#060e26]/60 p-5 hover:border-purple-500/40 hover:bg-[#071333] transition flex flex-col justify-between h-32 group"
+            >
+              <div>
+                <span className="text-[9px] uppercase tracking-wider text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full border border-purple-500/20">Admin Panel</span>
+                <h3 className="text-sm font-bold text-white mt-2 group-hover:text-purple-300 transition">Agent & Client Setup</h3>
+              </div>
+              <p className="text-[10px] text-white/50 leading-relaxed">Manage voice builder, missed call rules, and onboard client accounts.</p>
+            </Link>
+            <Link 
+              href="/dashboard"
+              className="rounded-2xl border border-white/10 bg-[#060e26]/60 p-5 hover:border-purple-500/40 hover:bg-[#071333] transition flex flex-col justify-between h-32 group"
+            >
+              <div>
+                <span className="text-[9px] uppercase tracking-wider text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full border border-purple-500/20">Client Center</span>
+                <h3 className="text-sm font-bold text-white mt-2 group-hover:text-purple-300 transition">Command Center Simulator</h3>
+              </div>
+              <p className="text-[10px] text-white/50 leading-relaxed">Launch outbound voice dialer tests and review simulated call metrics.</p>
+            </Link>
+            <Link 
+              href="/dashboard/user"
+              className="rounded-2xl border border-white/10 bg-[#060e26]/60 p-5 hover:border-purple-500/40 hover:bg-[#071333] transition flex flex-col justify-between h-32 group"
+            >
+              <div>
+                <span className="text-[9px] uppercase tracking-wider text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded-full border border-purple-500/20">User Center</span>
+                <h3 className="text-sm font-bold text-white mt-2 group-hover:text-purple-300 transition">Live CRM Leads Table</h3>
+              </div>
+              <p className="text-[10px] text-white/50 leading-relaxed">Inspect platform-wide lead sync, appointments, and direct SQLite records.</p>
+            </Link>
+          </div>
         </div>
 
         {/* Module Grid */}
