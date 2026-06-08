@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -76,7 +76,7 @@ model Lead {
   business    String
   status      String      @default("NEW")
   source      String
-  notes       String?
+  notes       String?     @db.Text
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   appointments Appointment[]
@@ -95,7 +95,7 @@ model Appointment {
   title       String
   scheduledAt DateTime
   status      String    @default("PENDING")
-  notes       String?
+  notes       String?   @db.Text
   createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdById String?
   createdAt   DateTime  @default(now())
@@ -112,7 +112,7 @@ model Campaign {
   startDate   DateTime
   endDate     DateTime?
   budget      Float?
-  notes       String?
+  notes       String?   @db.Text
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -136,7 +136,7 @@ model SMS {
   clientId    String
   lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
   leadId      String?
-  body        String
+  body        String   @db.Text
   status      String
   sentAt      DateTime @default(now())
 }
@@ -148,7 +148,7 @@ model Email {
   lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
   leadId      String?
   subject     String
-  body        String
+  body        String   @db.Text
   status      String
   openRate    Float?   @default(0)
   clickRate   Float?   @default(0)
@@ -194,8 +194,8 @@ model ChatbotLog {
   leadId      String?
   sessionId   String
   role        String
-  message     String
-  metadata    String?
+  message     String   @db.Text
+  metadata    String?  @db.Text
   createdAt   DateTime @default(now())
 }
 
@@ -204,7 +204,7 @@ model VoiceLog {
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId    String
   callId      String?
-  transcript  String?
+  transcript  String?  @db.Text
   durationSec Int
   createdAt   DateTime @default(now())
 }
@@ -216,7 +216,7 @@ model AuditLog {
   action      String
   actor       String?
   target      String?
-  details     String?
+  details     String?  @db.Text
   ipAddress   String?
   createdAt   DateTime @default(now())
 }
