@@ -228,7 +228,7 @@ export default function RegisterPage() {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="John Doe"
+                      placeholder="Enter your full name"
                       className="w-full bg-transparent py-3 pl-11 pr-4 text-xs text-white placeholder-white/30 outline-none"
                     />
                   </div>
@@ -245,7 +245,7 @@ export default function RegisterPage() {
                       type="tel"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="+1 (555) 000-0000"
+                      placeholder="Enter your phone number"
                       className="w-full bg-transparent py-3 pl-11 pr-4 text-xs text-white placeholder-white/30 outline-none"
                     />
                   </div>
@@ -262,7 +262,7 @@ export default function RegisterPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
+                      placeholder="Enter your email address"
                       className="w-full bg-transparent py-3 pl-11 pr-4 text-xs text-white placeholder-white/30 outline-none"
                     />
                   </div>
