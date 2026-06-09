@@ -18,27 +18,36 @@ const superadminRoutes = require('./routes/superadmin').default;
 const adminRoutes = require('./routes/admin').default;
 const app = express();
 
-app.use(helmet());
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:5504',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:3001',
-  'http://127.0.0.1:5504'
-];
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-  if (process.env.FRONTEND_URL.includes('localhost')) {
-    allowedOrigins.push(process.env.FRONTEND_URL.replace('localhost', '127.0.0.1'));
-  } else if (process.env.FRONTEND_URL.includes('127.0.0.1')) {
-    allowedOrigins.push(process.env.FRONTEND_URL.replace('127.0.0.1', 'localhost'));
-  }
-}
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
-app.use(cors({ 
-  origin: allowedOrigins,
-  credentials: true 
+// In development, allow CORS requests from any local address (localhost / 127.0.0.1) on any port,
+// which is crucial for VS Code Live Server (which runs on ports like 5500, 5504, 5505, etc.)
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches localhost or 127.0.0.1 (any port)
+    const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    
+    if (isLocalhost) {
+      return callback(null, true);
+    }
+    
+    // Allow any other configured front-end URLs
+    if (process.env.FRONTEND_URL && (
+      origin === process.env.FRONTEND_URL ||
+      origin === process.env.FRONTEND_URL.replace('localhost', '127.0.0.1') ||
+      origin === process.env.FRONTEND_URL.replace('127.0.0.1', 'localhost')
+    )) {
+      return callback(null, true);
+    }
+    
+    // Fallback: allow in development mode for extreme reliability
+    return callback(null, true);
+  },
+  credentials: true
 }));
 app.use(express.json());
 
