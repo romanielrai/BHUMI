@@ -180,7 +180,7 @@ export default function RegisterPage() {
                   ? 'border-red-600 bg-background text-red-400 shadow-[0_0_12px_rgba(220,38,38,0.3)]' 
                   : 'border-white/20 bg-background text-white/40'
               }`}>
-                '2'
+                2
               </div>
               <span className={`mt-2 text-[9px] font-bold tracking-wider uppercase transition ${
                 step === 2 ? 'text-red-400' : 'text-white/40'

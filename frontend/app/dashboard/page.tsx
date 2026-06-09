@@ -80,7 +80,66 @@ export default function CommandCenterPage() {
   const [trialMsg, setTrialMsg] = useState('');
 
   // Feed update simulator notes
-  const [latestFeedNotes] = useState<string>('Delivery Agent Note: Integrated ServiceTitan. AI Callback rules successfully live.');
+  const [latestFeedNotes, setLatestFeedNotes] = useState<string>('Delivery Agent Note: Integrated ServiceTitan. AI Callback rules successfully live.');
+
+  const fetchDashboardData = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const metricsRes = await fetch('/api/dashboard', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (metricsRes.ok) {
+        const data = await metricsRes.json();
+        if (data.metrics) {
+          setTotalBooked(data.metrics.appointmentsBooked ?? 54);
+          setTotalRecovered(data.metrics.recoveredLeads ?? 38);
+          if (data.metrics.publisherNote) {
+            setLatestFeedNotes(data.metrics.publisherNote);
+          }
+        }
+      }
+
+      const leadsRes = await fetch('/api/leads', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (leadsRes.ok) {
+        const data = await leadsRes.json();
+        const apiLeads = data.leads ?? [];
+        if (apiLeads.length > 0) {
+          const mappedCalls: CallRecord[] = apiLeads.slice(0, 5).map((lead: any, index: number) => {
+            const diffMs = Date.now() - new Date(lead.createdAt).getTime();
+            const diffMins = Math.floor(diffMs / 60000);
+            let timeText = 'just now';
+            if (diffMins > 0) {
+              if (diffMins < 60) {
+                timeText = `${diffMins}m ago`;
+              } else {
+                const diffHours = Math.floor(diffMins / 60);
+                timeText = `${diffHours}h ago`;
+              }
+            }
+            let mappedStatus: 'Booked' | 'Voicemail' | 'Declined' = 'Voicemail';
+            if (lead.status === 'BOOKED') mappedStatus = 'Booked';
+            else if (lead.status === 'LOST') mappedStatus = 'Declined';
+            return {
+              id: lead.id || String(index),
+              name: lead.name,
+              phone: lead.phone,
+              time: timeText,
+              status: mappedStatus,
+              duration: '1m ' + (15 + (index * 7) % 45) + 's',
+              script: `${lead.source} - ${lead.business}`
+            };
+          });
+          setCallsFeed(mappedCalls);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -99,33 +158,20 @@ export default function CommandCenterPage() {
         router.push('/dashboard/user');
         return;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Failed to parse user storage data', e);
+    }
 
     setLoading(false);
+    fetchDashboardData();
 
     // Ticking Simulator: occasionally add new events or bump revenue
     const simulation = setInterval(() => {
       setTotalRevenue(prev => prev + Math.floor(Math.random() * 200) + 50);
       
-      // Randomly append incoming simulated call to feed
+      // Randomly append incoming simulated call to feed or fetch updates
       if (Math.random() > 0.85) {
-        const randId = Math.floor(Math.random() * 1000).toString();
-        const names = ['Linda Evans', 'George Harris', 'Sophia Rossi', 'Alex Mercer'];
-        const outcomes: ('Booked' | 'Voicemail' | 'Declined')[] = ['Booked', 'Voicemail', 'Declined'];
-        const newCall: CallRecord = {
-          id: randId,
-          name: names[Math.floor(Math.random() * names.length)],
-          phone: `+1 (555) 01${Math.floor(Math.random() * 90) + 10}`,
-          time: 'just now',
-          status: outcomes[Math.floor(Math.random() * outcomes.length)],
-          duration: '1m ' + Math.floor(Math.random() * 59) + 's',
-          script: 'Septic & Drain Callback - Live recovery run'
-        };
-        setCallsFeed(prev => [newCall, ...prev.slice(0, 4)]);
-        if (newCall.status === 'Booked') {
-          setTotalBooked(b => b + 1);
-          setTotalRecovered(r => r + 1);
-        }
+        fetchDashboardData();
       }
     }, 5000);
 

@@ -19,6 +19,7 @@ export interface SystemConfigs {
     salesforce: boolean;
   };
   kbEntries: { q: string; a: string }[];
+  publisherNote: string;
 }
 
 const defaultConfigs: SystemConfigs = {
@@ -61,7 +62,8 @@ YOUR ROLE:
   kbEntries: [
     { q: 'What is the setup time?', a: 'AI receptionist setup is live within 48 hours.' },
     { q: 'Is there a contract?', a: 'All packages are month-to-month with no long-term contract.' }
-  ]
+  ],
+  publisherNote: 'Delivery Agent Note: Integrated ServiceTitan. AI Callback rules successfully live.'
 };
 
 let activeConfigs: SystemConfigs = { ...defaultConfigs };

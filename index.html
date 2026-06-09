@@ -2,14 +2,428 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Redirecting to AI Growth Systems</title>
-    <meta http-equiv="refresh" content="0;url=http://localhost:3001/" />
-    <script>window.location.replace('http://localhost:3001/');</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Growth Systems Launcher</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+      :root {
+        --bg-color: #030816;
+        --card-bg: rgba(8, 16, 41, 0.6);
+        --border-color: rgba(255, 255, 255, 0.08);
+        --gold: #cfc7ba;
+        --gold-glow: rgba(207, 199, 186, 0.15);
+        --red: #f43f5e;
+        --green: #10b981;
+        --text-color: #e2e8f0;
+        --text-muted: #94a3b8;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        background-image: 
+          radial-gradient(circle at top, rgba(143, 122, 103, 0.18), transparent 45%),
+          linear-gradient(180deg, #02061d 0%, #050b24 100%);
+        color: var(--text-color);
+        font-family: 'Outfit', sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+        padding: 24px;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .glow-orb {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 28px;
+        padding: 40px 32px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 32px rgba(207, 199, 186, 0.03);
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+
+      .logo-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        color: var(--gold);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        animation: pulse-glow 3s infinite ease-in-out;
+      }
+
+      @keyframes pulse-glow {
+        0%, 100% {
+          box-shadow: 0 0 16px rgba(207, 199, 186, 0.1);
+          border-color: rgba(255, 255, 255, 0.08);
+        }
+        50% {
+          box-shadow: 0 0 32px rgba(207, 199, 186, 0.3);
+          border-color: rgba(207, 199, 186, 0.4);
+        }
+      }
+
+      h1 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+        color: #fff;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 32px;
+        line-height: 1.5;
+      }
+
+      /* Server Status Section */
+      .status-grid {
+        display: grid;
+        grid-template-cols: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 36px;
+      }
+
+      .status-box {
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 16px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .status-box .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        font-weight: 600;
+      }
+
+      .status-box .port {
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 4px;
+      }
+
+      .indicator-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        position: relative;
+      }
+
+      .status-indicator.offline {
+        color: var(--red);
+      }
+      .status-indicator.offline .indicator-dot {
+        background-color: var(--red);
+        box-shadow: 0 0 10px var(--red);
+      }
+
+      .status-indicator.online {
+        color: var(--green);
+      }
+      .status-indicator.online .indicator-dot {
+        background-color: var(--green);
+        box-shadow: 0 0 10px var(--green);
+        animation: pulse-dot 1.5s infinite ease-in-out;
+      }
+
+      @keyframes pulse-dot {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.3); opacity: 0.7; }
+      }
+
+      /* Launch Instructions */
+      .instructions-card {
+        background: rgba(207, 199, 186, 0.02);
+        border: 1px dashed rgba(207, 199, 186, 0.15);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 32px;
+        text-align: left;
+      }
+
+      .instructions-card h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--gold);
+        margin-bottom: 12px;
+        font-weight: 700;
+      }
+
+      .instructions-card ol {
+        padding-left: 18px;
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.8;
+      }
+
+      .instructions-card strong {
+        color: #fff;
+      }
+
+      /* Loader */
+      .checking-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--gold);
+        font-weight: 600;
+        margin-top: 12px;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(207, 199, 186, 0.2);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spin 1s infinite linear;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Redirect button if stuck */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        background: var(--gold);
+        color: #030816;
+        border: none;
+        border-radius: 16px;
+        padding: 16px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        box-shadow: 0 4px 16px rgba(207, 199, 186, 0.2);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(207, 199, 186, 0.4);
+        filter: brightness(1.05);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+    </style>
   </head>
   <body>
-    <p>Redirecting to <a href="http://localhost:3001/">http://localhost:3001/</a></p>
-    <p>If you are not redirected automatically, click the link above.</p>
-    <p>API health: <a href="http://localhost:4000/api/health">/api/health</a></p>
+    <div class="glow-orb"></div>
+    
+    <div class="container">
+      <div class="card">
+        <!-- Logo -->
+        <div class="logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 0 0-10 10c0 5.523 4.477 10 10 10a10 10 0 0 0 10-10A10 10 0 0 0 12 2Z"/>
+            <path d="M12 8a4 4 0 0 0-4 4c0 2.21 1.79 4 4 4a4 4 0 0 0 4-4A4 4 0 0 0 12 8Z"/>
+            <path d="M12 10a2 2 0 0 0-2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2 2 2 0 0 0-2-2Z"/>
+          </svg>
+        </div>
+
+        <h1 id="title">Launcher Status</h1>
+        <p class="subtitle" id="status-text">Detecting active development servers in your workspace...</p>
+
+        <!-- Status Grid -->
+        <div class="status-grid">
+          <div class="status-box">
+            <span class="label">Frontend</span>
+            <span class="port">Port 3001</span>
+            <div id="frontend-status" class="status-indicator offline">
+              <span class="indicator-dot"></span>
+              <span class="text">Offline</span>
+            </div>
+          </div>
+          <div class="status-box">
+            <span class="label">API Backend</span>
+            <span class="port">Port 4000</span>
+            <div id="backend-status" class="status-indicator offline">
+              <span class="indicator-dot"></span>
+              <span class="text">Offline</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructions (Hidden when everything is running) -->
+        <div id="instructions" class="instructions-card">
+          <h2>How to Start the App</h2>
+          <ol>
+            <li>Double-click the <strong><code>START_DEV.bat</code></strong> file in your project folder.</li>
+            <li>Or open your terminal in VS Code and run <strong><code>npm run dev</code></strong>.</li>
+            <li>Once started, this launcher will automatically open the web app.</li>
+          </ol>
+        </div>
+
+        <!-- Loader -->
+        <div class="checking-loader" id="loader">
+          <div class="spinner"></div>
+          <span>Pinging active ports...</span>
+        </div>
+
+        <!-- Direct Link Button (Hidden by default, shown if online) -->
+        <a href="http://localhost:3001/" class="btn" id="launch-btn" style="display: none;">
+          Launch Live App
+        </a>
+      </div>
+    </div>
+
+    <script>
+      const FRONTEND_URLS = ['http://127.0.0.1:3001', 'http://localhost:3001'];
+      const BACKEND_URLS = ['http://127.0.0.1:4000/api/health', 'http://localhost:4000/api/health'];
+      
+      let isFrontendOnline = false;
+      let isBackendOnline = false;
+      let redirectTriggered = false;
+
+      async function checkPort(urls) {
+        for (const url of urls) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 800);
+            await fetch(url, { 
+              mode: 'no-cors', 
+              signal: controller.signal 
+            });
+            clearTimeout(timeoutId);
+            return true;
+          } catch (e) {
+            // Keep trying next URL
+          }
+        }
+        return false;
+      }
+
+      async function updateStatuses() {
+        // Run checks concurrently
+        const [feCheck, beCheck] = await Promise.all([
+          checkPort(FRONTEND_URLS),
+          checkPort(BACKEND_URLS)
+        ]);
+
+        isFrontendOnline = feCheck;
+        isBackendOnline = beCheck;
+
+        // Update Frontend UI
+        const feIndicator = document.getElementById('frontend-status');
+        if (isFrontendOnline) {
+          feIndicator.className = 'status-indicator online';
+          feIndicator.querySelector('.text').textContent = 'Online';
+        } else {
+          feIndicator.className = 'status-indicator offline';
+          feIndicator.querySelector('.text').textContent = 'Offline';
+        }
+
+        // Update Backend UI
+        const beIndicator = document.getElementById('backend-status');
+        if (isBackendOnline) {
+          beIndicator.className = 'status-indicator online';
+          beIndicator.querySelector('.text').textContent = 'Online';
+        } else {
+          beIndicator.className = 'status-indicator offline';
+          beIndicator.querySelector('.text').textContent = 'Offline';
+        }
+
+        const title = document.getElementById('title');
+        const statusText = document.getElementById('status-text');
+        const instructions = document.getElementById('instructions');
+        const loader = document.getElementById('loader');
+        const launchBtn = document.getElementById('launch-btn');
+
+        if (isFrontendOnline && isBackendOnline) {
+          // Everything is running
+          title.textContent = 'Servers Connected';
+          statusText.textContent = 'Redirecting to your application cockpit...';
+          instructions.style.display = 'none';
+          loader.style.display = 'none';
+          launchBtn.style.display = 'inline-flex';
+          
+          if (!redirectTriggered) {
+            redirectTriggered = true;
+            setTimeout(() => {
+              window.location.href = FRONTEND_URLS[0]; // Redirect to IP for stability
+            }, 800);
+          }
+        } else {
+          // Offline or partially online
+          title.textContent = 'Launcher Offline';
+          statusText.textContent = 'Please start the local development server to continue.';
+          instructions.style.display = 'block';
+          loader.style.display = 'flex';
+          launchBtn.style.display = 'none';
+          redirectTriggered = false;
+        }
+      }
+
+      // Initial check & start loop
+      updateStatuses();
+      setInterval(updateStatuses, 2000);
+    </script>
   </body>
 </html>

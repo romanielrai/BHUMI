@@ -185,7 +185,7 @@ export default function LoginPage() {
         {/* Footer Redirect to Register */}
         <div className="mt-6 border-t border-white/5 pt-5 text-center">
           <p className="text-xs text-white/50">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/register" className="font-bold text-red-400 hover:text-red-300 transition">
               Sign Up / Register
             </Link>

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../prisma';
 import { requireAuth, requireRole } from '../middleware/auth';
+import { getConfigs } from '../config-store';
 
 const router = Router();
 
@@ -78,7 +79,8 @@ router.get('/', requireAuth, async (req, res) => {
         leadsGenerated: leadCount,
         appointmentsBooked: appointmentCount,
         callsAnswered: callCount,
-        recoveredLeads
+        recoveredLeads,
+        publisherNote: getConfigs().publisherNote
       }
     });
   } catch (error) {

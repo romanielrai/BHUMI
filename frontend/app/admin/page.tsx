@@ -80,6 +80,43 @@ export default function AgentDashboard() {
   const [inboxReplyText, setInboxReplyText] = useState('');
   const [selectedInboxId, setSelectedInboxId] = useState<string | null>('in1');
 
+  const fetchClients = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/admin/clients', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setClients(data.clients ?? []);
+      }
+    } catch (err) {
+      console.error('Error fetching clients:', err);
+    }
+  };
+
+  const fetchConfigs = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/admin/configs', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.systemPrompt) {
+          setCallScript(data.systemPrompt);
+        }
+        if (data.voiceScript) {
+          setSelectedVoiceIndustry(data.voiceScript);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching configs:', err);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
@@ -95,6 +132,8 @@ export default function AgentDashboard() {
       const role = parsedUser.role?.toUpperCase?.() || parsedUser.role;
       if (role === 'ADMIN' || role === 'SUPERADMIN') {
         setAuthorized(true);
+        fetchClients();
+        fetchConfigs();
       } else {
         router.push('/login');
       }
@@ -112,39 +151,86 @@ export default function AgentDashboard() {
   };
 
   // Onboard client
-  const handleCreateClient = (e: React.FormEvent) => {
+  const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newId = 'client-' + (clients.length + 1);
-    const added: Client = {
-      id: newId,
-      companyName: newClient.companyName,
-      contactName: newClient.contactName,
-      contactEmail: newClient.contactEmail,
-      contactPhone: newClient.contactPhone,
-      plan: newClient.plan,
-      industry: newClient.industry,
-      revenueBracket: newClient.revenueBracket,
-      status: 'ACTIVE'
-    };
-    setClients(prev => [...prev, added]);
-    setShowAddClient(false);
-    setNewClient({ companyName: '', contactName: '', contactEmail: '', contactPhone: '', plan: 'GROWTH', industry: 'Septic & Drain', revenueBracket: '$5M–$15M' });
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/admin/clients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          companyName: newClient.companyName,
+          contactName: newClient.contactName,
+          contactEmail: newClient.contactEmail,
+          contactPhone: newClient.contactPhone,
+          plan: newClient.plan,
+          industry: newClient.industry
+        })
+      });
+      if (res.ok) {
+        fetchClients();
+        setShowAddClient(false);
+        setNewClient({ companyName: '', contactName: '', contactEmail: '', contactPhone: '', plan: 'GROWTH', industry: 'Septic & Drain', revenueBracket: '$5M–$15M' });
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to onboard client');
+      }
+    } catch (err) {
+      console.error('Error creating client:', err);
+    }
   };
 
   // Toggle Suspend client
-  const handleToggleSuspend = (clientId: string) => {
-    setClients(prev => prev.map(c => {
-      if (c.id === clientId) {
-        return { ...c, status: c.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED' };
+  const handleToggleSuspend = async (clientId: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const client = clients.find(c => c.id === clientId);
+    if (!client) return;
+    const newStatus = client.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED';
+    try {
+      const res = await fetch(`/api/admin/clients/${clientId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        fetchClients();
       }
-      return c;
-    }));
+    } catch (err) {
+      console.error('Error suspending/activating client:', err);
+    }
   };
 
   // Save Call Script per Industry
-  const handleSaveScript = () => {
-    setScriptSaved(true);
-    setTimeout(() => setScriptSaved(false), 3000);
+  const handleSaveScript = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/admin/configs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          voiceScript: selectedVoiceIndustry,
+          systemPrompt: callScript
+        })
+      });
+      if (res.ok) {
+        setScriptSaved(true);
+        setTimeout(() => setScriptSaved(false), 3000);
+      }
+    } catch (err) {
+      console.error('Error saving script configuration:', err);
+    }
   };
 
   // Upload Dead Lead list CSV
@@ -180,15 +266,31 @@ export default function AgentDashboard() {
   };
 
   // Publish Note to Client Command Center
-  const handlePublishNote = (e: React.FormEvent) => {
+  const handlePublishNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!publisherNote) return;
     setPublisherStatus('Pushing update note to Command Center feed...');
-    setTimeout(() => {
-      setPublisherStatus('Published! Command Center dashboard notes updated.');
-      setPublisherNote('');
-      setTimeout(() => setPublisherStatus(''), 3000);
-    }, 1200);
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/admin/configs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ publisherNote })
+      });
+      if (res.ok) {
+        setPublisherStatus('Published! Command Center dashboard notes updated.');
+        setPublisherNote('');
+        setTimeout(() => setPublisherStatus(''), 3000);
+      } else {
+        setPublisherStatus('Failed to publish update.');
+      }
+    } catch (err) {
+      setPublisherStatus('Network error publishing update.');
+    }
   };
 
   // Send Manual Reply in Inbox

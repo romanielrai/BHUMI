@@ -183,7 +183,12 @@ router.patch('/appointments/:id', async (req: any, res) => {
 router.get('/configs', async (req, res) => {
   try {
     const configs = getConfigs();
-    return res.json({ kbEntries: configs.kbEntries, voiceScript: configs.voiceProfile });
+    return res.json({ 
+      kbEntries: configs.kbEntries, 
+      voiceScript: configs.voiceProfile,
+      systemPrompt: configs.systemPrompt,
+      publisherNote: configs.publisherNote
+    });
   } catch (error: any) {
     return res.status(500).json({ error: error.message || 'Failed to fetch settings' });
   }
@@ -191,10 +196,12 @@ router.get('/configs', async (req, res) => {
 
 router.post('/configs', async (req: any, res) => {
   try {
-    const { kbEntries, voiceScript } = req.body;
+    const { kbEntries, voiceScript, systemPrompt, publisherNote } = req.body;
     const updates: any = {};
     if (kbEntries !== undefined) updates.kbEntries = kbEntries;
     if (voiceScript !== undefined) updates.voiceProfile = voiceScript; // Map voiceScript to voiceProfile field
+    if (systemPrompt !== undefined) updates.systemPrompt = systemPrompt;
+    if (publisherNote !== undefined) updates.publisherNote = publisherNote;
     
     const configs = updateConfigs(updates);
 
@@ -203,7 +210,7 @@ router.post('/configs', async (req: any, res) => {
       data: {
         action: 'UPDATE_ADMIN_CONFIGS',
         actor: req.user?.email || 'admin',
-        details: 'Admin updated chatbot knowledge base or voice scripts',
+        details: 'Admin updated chatbot knowledge base, voice scripts, or publisher notes',
         ipAddress: req.ip || '127.0.0.1'
       }
     });
@@ -211,7 +218,9 @@ router.post('/configs', async (req: any, res) => {
     return res.json({ 
       message: 'Settings updated successfully', 
       kbEntries: configs.kbEntries, 
-      voiceScript: configs.voiceProfile 
+      voiceScript: configs.voiceProfile,
+      systemPrompt: configs.systemPrompt,
+      publisherNote: configs.publisherNote
     });
   } catch (error: any) {
     return res.status(500).json({ error: error.message || 'Failed to update settings' });
