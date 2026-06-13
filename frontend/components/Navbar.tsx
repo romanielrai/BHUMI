@@ -156,7 +156,8 @@ export default function Navbar() {
 
   const allNavItems = [
     ...navItems,
-    ...(dashboardLink ? [dashboardLink] : []),
+    // Dashboard and Admin panels removed by user request
+    // ...(dashboardLink ? [dashboardLink] : []),
     ...(profileLink ? [profileLink] : [])
   ];
 
@@ -321,6 +322,16 @@ export default function Navbar() {
                           <p className="text-xs text-foreground/50">{session.user.email}</p>
                         </div>
                       </div>
+                    )}
+                    {dashboardLink && (
+                      <Link
+                        href={dashboardLink.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex w-full items-center justify-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-5 py-3 text-sm font-semibold text-gold transition hover:bg-gold/10"
+                      >
+                        <LayoutDashboard size={14} />
+                        {dashboardLink.label}
+                      </Link>
                     )}
                     <button
                       onClick={handleLogout}
