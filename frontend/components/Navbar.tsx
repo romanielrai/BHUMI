@@ -144,11 +144,11 @@ export default function Navbar() {
   if (effectiveLoggedIn) {
     profileLink = { label: 'Profile', href: '/profile' };
     if (userRole === 'SUPERADMIN') {
-      dashboardLink = { label: 'Superadmin Panel', href: '/superadmin' };
+      dashboardLink = { label: 'Superadmin Panel', href: '/dashboard' };
     } else if (userRole === 'ADMIN') {
-      dashboardLink = { label: 'Admin Panel', href: '/admin' };
+      dashboardLink = { label: 'Admin Panel', href: '/dashboard' };
     } else if (userRole === 'USER') {
-      dashboardLink = { label: 'User Dashboard', href: '/dashboard/user' };
+      dashboardLink = { label: 'User Dashboard', href: '/dashboard' };
     } else {
       dashboardLink = { label: 'Command Center', href: '/dashboard' };
     }

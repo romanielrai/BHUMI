@@ -44,7 +44,7 @@ export default function ProfilePage() {
 
     const fetchProfile = async () => {
       try {
-        const response = await fetch('/api/auth/profile', {
+        const response = await fetch('/api/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -109,7 +109,7 @@ export default function ProfilePage() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('/api/auth/profile', {
+      const response = await fetch('/api/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

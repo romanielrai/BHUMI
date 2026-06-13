@@ -31,8 +31,8 @@ function LoginContent() {
       try {
         const user = JSON.parse(userStr);
         const role = user.role?.toUpperCase();
-        if (role === 'SUPERADMIN') router.push('/superadmin');
-        else if (role === 'ADMIN') router.push('/admin');
+        if (role === 'SUPERADMIN') router.push('/dashboard');
+        else if (role === 'ADMIN') router.push('/dashboard');
         else router.push('/dashboard');
       } catch (e) {
         router.push('/dashboard');
@@ -66,8 +66,8 @@ function LoginContent() {
       setStatus('Access Granted! Redirecting...');
       const role = data.user?.role?.toUpperCase();
       setTimeout(() => {
-        if (role === 'SUPERADMIN') router.push('/superadmin');
-        else if (role === 'ADMIN') router.push('/admin');
+        if (role === 'SUPERADMIN') router.push('/dashboard');
+        else if (role === 'ADMIN') router.push('/dashboard');
         else router.push('/dashboard');
       }, 800);
     } catch (err: any) {
