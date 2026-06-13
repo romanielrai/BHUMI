@@ -140,7 +140,9 @@ export default function Navbar() {
   };
 
   let dashboardLink = null;
+  let profileLink = null;
   if (effectiveLoggedIn) {
+    profileLink = { label: 'Profile', href: '/profile' };
     if (userRole === 'SUPERADMIN') {
       dashboardLink = { label: 'Superadmin Panel', href: '/superadmin' };
     } else if (userRole === 'ADMIN') {
@@ -154,7 +156,8 @@ export default function Navbar() {
 
   const allNavItems = [
     ...navItems,
-    ...(dashboardLink ? [dashboardLink] : [])
+    ...(dashboardLink ? [dashboardLink] : []),
+    ...(profileLink ? [profileLink] : [])
   ];
 
   return (

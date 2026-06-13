@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../prisma';
+import { requireAuth, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
@@ -107,6 +108,116 @@ router.post('/register', async (req, res) => {
   } catch (error) {
     console.error('Registration error:', error);
     return res.status(500).json({ error: 'An error occurred during registration' });
+  }
+});
+
+router.get('/profile', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user?.id },
+      include: { role: true, client: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role.name,
+        phone: user.client?.contactPhone || '',
+        business: user.client?.companyName || ''
+      }
+    });
+  } catch (error) {
+    console.error('Fetch profile error:', error);
+    return res.status(500).json({ error: 'An error occurred fetching profile details' });
+  }
+});
+
+router.patch('/profile', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const { name, email, phone, business, password } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { client: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (email && email !== user.email) {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        return res.status(400).json({ error: 'A user with this email already exists' });
+      }
+    }
+
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (password) {
+      updateData.passwordHash = await bcrypt.hash(password, 12);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      include: { role: true, client: true }
+    });
+
+    if (updatedUser.clientId) {
+      const clientUpdate: any = {};
+      if (business !== undefined) clientUpdate.companyName = business;
+      if (name !== undefined) clientUpdate.contactName = name;
+      if (email !== undefined) clientUpdate.contactEmail = email;
+      if (phone !== undefined) clientUpdate.contactPhone = phone;
+
+      await prisma.client.update({
+        where: { id: updatedUser.clientId },
+        data: clientUpdate
+      });
+    }
+
+    const token = jwt.sign(
+      { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role.name },
+      process.env.JWT_SECRET ?? 'secret',
+      { expiresIn: '7d' }
+    );
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'UPDATE_PROFILE',
+        actor: updatedUser.email,
+        details: 'User updated profile details successfully',
+        ipAddress: req.ip || '127.0.0.1'
+      }
+    });
+
+    return res.json({
+      token,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role.name,
+        phone: updatedUser.client?.contactPhone || phone || '',
+        business: updatedUser.client?.companyName || business || ''
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    return res.status(500).json({ error: 'An error occurred while updating profile details' });
   }
 });
 
