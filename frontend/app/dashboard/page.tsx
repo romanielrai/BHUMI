@@ -540,13 +540,13 @@ export default function CommandCenterPage() {
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Type a response to simulate lead reply..."
-                className="flex-1 bg-[#050b1d] border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:border-gold outline-none"
+                className="flex-1 bg-[#050b1d] border border-white/10 rounded-xl px-4 h-11 text-xs text-white focus:border-gold outline-none"
               />
               <button
                 type="submit"
-                className="rounded-xl bg-gold text-background px-4 py-3 text-xs font-bold hover:brightness-105 transition flex items-center justify-center"
+                className="h-11 w-11 rounded-xl bg-gold text-background hover:brightness-105 transition flex items-center justify-center flex-shrink-0 shadow-sm"
               >
-                <Send size={14} />
+                <Send size={16} />
               </button>
             </form>
           </div>
