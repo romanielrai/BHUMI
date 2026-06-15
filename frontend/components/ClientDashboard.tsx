@@ -350,7 +350,7 @@ export default function ClientDashboard() {
                 <p className="text-xs text-white/40 text-center py-6">No campaigns found. Upload a database above to start.</p>
               ) : (
                 projects.map((proj) => (
-                  <div key={proj.id} className="rounded-xl border border-white/5 bg-white/[0.01] p-4.5 space-y-4">
+                  <div key={proj.id} className="rounded-xl border border-white/5 bg-white/[0.01] p-5 space-y-4">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                       <div>
                         <h4 className="text-xs font-bold text-white">{proj.name}</h4>
@@ -570,7 +570,7 @@ export default function ClientDashboard() {
                 <p className="text-xs text-white/40 text-center py-6">Timeline is quiet.</p>
               ) : (
                 activities.map((act) => (
-                  <div key={act.id} className="relative pl-5.5 border-l border-white/10">
+                  <div key={act.id} className="relative pl-6 border-l border-white/10">
                     <span className="absolute -left-1 top-1.5 h-2 w-2 rounded-full bg-blue-500" />
                     <h5 className="text-xs font-bold text-white/80">{act.action}</h5>
                     <p className="text-[10px] text-white/40 mt-0.5">{act.details}</p>

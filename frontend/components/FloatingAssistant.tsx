@@ -106,9 +106,9 @@ export default function FloatingAssistant() {
             className="mb-3 w-[320px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-[20px] border border-white/10 bg-background/95 shadow-glow backdrop-blur-xl md:w-[340px]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/10 bg-gold/5 px-4.5 py-3">
+            <div className="flex items-center justify-between border-b border-white/10 bg-gold/5 px-5 py-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-7.5 w-7.5 items-center justify-center rounded-lg bg-gold/10 text-gold">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10 text-gold">
                   <Bot size={16} className="animate-pulse" />
                 </div>
                 <div>
