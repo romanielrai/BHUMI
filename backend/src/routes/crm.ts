@@ -68,7 +68,11 @@ async function pushNotification(userId: string, title: string, message: string, 
 router.post('/upload', requireAuth, async (req: AuthRequest, res) => {
   try {
     const { fileName, fileType, recordCount } = req.body;
-    const clientId = req.user?.id === 'user-client' ? 'client-1' : 'client-default';
+    
+    const dbUser = await prisma.user.findUnique({
+      where: { id: req.user!.id }
+    });
+    const clientId = dbUser?.clientId || 'client-default';
 
     if (!fileName || !recordCount) {
       return res.status(400).json({ error: 'fileName and recordCount are required' });
@@ -109,7 +113,8 @@ router.post('/upload', requireAuth, async (req: AuthRequest, res) => {
           email: `${sampleNames[i % sampleNames.length].toLowerCase().replace(' ', '')}@example.com`,
           notes: 'Simulated lead from CSV database upload.',
           status: 'NEW',
-          projectId: project.id
+          projectId: project.id,
+          clientId: clientId
         }
       });
     }

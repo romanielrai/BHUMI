@@ -236,7 +236,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 py-3.5 text-xs font-bold text-white transition duration-200 shadow-md hover:scale-[1.01] disabled:opacity-50 pt-4"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gold hover:brightness-110 py-3.5 text-xs font-bold text-[#030816] transition duration-200 shadow-md shadow-gold/10 hover:scale-[1.01] disabled:opacity-50"
             >
               <Sparkles size={14} />
               <span>Complete Signup</span>
@@ -247,7 +247,7 @@ export default function RegisterPage() {
           <div className="mt-6 border-t border-white/5 pt-5 text-center">
             <p className="text-xs text-white/50">
               Already have an account?{' '}
-              <Link href="/login" className="font-bold text-red-400 hover:text-red-300 transition">
+              <Link href="/login" className="font-bold text-gold hover:text-white transition-all">
                 Sign In
               </Link>
             </p>

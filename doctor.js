@@ -190,7 +190,7 @@ async function runDoctor() {
   const backendOccupied = results.find(r => r.port === 4000).status === 'occupied';
   if (backendOccupied) {
     console.log(`  Pinging Backend health endpoint...`);
-    const beHealth = await checkHealth('http://localhost:4000/health');
+    const beHealth = await checkHealth('http://127.0.0.1:4000/health');
     if (beHealth.ok && beHealth.data && beHealth.data.status === 'ok') {
       console.log(`  ${colors.green}✔${colors.reset} Backend Health GET /health: Online (status: ok)`);
     } else {
@@ -204,7 +204,7 @@ async function runDoctor() {
   const frontendOccupied = results.find(r => r.port === 3001).status === 'occupied';
   if (frontendOccupied) {
     console.log(`  Pinging Frontend home page...`);
-    const feHealth = await checkHealth('http://localhost:3001/');
+    const feHealth = await checkHealth('http://127.0.0.1:3001/');
     if (feHealth.ok) {
       console.log(`  ${colors.green}✔${colors.reset} Frontend Health GET /: Online (status: 200)`);
     } else {

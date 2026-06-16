@@ -7,6 +7,7 @@ import SuperAdminDashboard from '../../components/SuperAdminDashboard';
 import AdminDashboard from '../../components/AdminDashboard';
 import ClientDashboard from '../../components/ClientDashboard';
 import AgentDashboard from '../../components/AgentDashboard';
+import { getCleanDisplayName } from '../../utils/nameHelper';
 
 export default function UnifiedDashboardPage() {
   const router = useRouter();
@@ -46,13 +47,7 @@ export default function UnifiedDashboardPage() {
   }, [router]);
 
   const getDisplayName = () => {
-    if (!user?.name) return 'Systems Specialist';
-    if (user.name.includes('@')) {
-      const username = user.name.split('@')[0];
-      const parts = username.split(/[\._-]/);
-      return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
-    }
-    return user.name;
+    return getCleanDisplayName(user?.name, user?.email);
   };
 
   const getRoleLabel = (role: string) => {

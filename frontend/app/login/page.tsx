@@ -91,9 +91,9 @@ function LoginContent() {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="w-full max-w-[440px] rounded-[24px] border border-white/10 bg-background/80 p-8 shadow-glow text-white backdrop-blur-md"
       >
-        {/* Header Icon / Logo - White rounded square container */}
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white p-2.5 shadow-md">
-          <div className="flex h-full w-full items-center justify-center rounded-lg bg-red-100 text-red-600">
+        {/* Header Icon / Logo - Glassmorphic container */}
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/10 border border-gold/20 p-2.5 shadow-md">
+          <div className="flex h-full w-full items-center justify-center rounded-lg text-gold">
             <Bot size={24} className="animate-pulse" />
           </div>
         </div>
@@ -155,7 +155,7 @@ function LoginContent() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] font-bold text-white/50 tracking-widest uppercase">Password</label>
-              <a href="#" className="text-[10px] font-semibold text-red-400 hover:text-red-300 transition">Forgot Password?</a>
+              <a href="#" className="text-[10px] font-semibold text-gold hover:text-white transition-all">Forgot Password?</a>
             </div>
             <div className="relative rounded-xl bg-white/5 border border-white/10 focus-within:border-gold/50 transition">
               <span className="absolute inset-y-0 left-4 flex items-center text-white/40">
@@ -175,7 +175,7 @@ function LoginContent() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 py-3.5 text-xs font-bold text-white transition duration-200 shadow-md hover:scale-[1.01]"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gold hover:brightness-110 py-3.5 text-xs font-bold text-[#030816] transition duration-200 shadow-md shadow-gold/10 hover:scale-[1.01] disabled:opacity-50"
           >
             <span>Sign In</span>
             <ArrowRight size={14} />
@@ -186,7 +186,7 @@ function LoginContent() {
         <div className="mt-6 border-t border-white/5 pt-5 text-center">
           <p className="text-xs text-white/50">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="font-bold text-red-400 hover:text-red-300 transition">
+            <Link href="/register" className="font-bold text-gold hover:text-white transition-all">
               Sign Up / Register
             </Link>
           </p>

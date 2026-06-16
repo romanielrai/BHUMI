@@ -6,36 +6,42 @@ dotenv.config();
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Starting seed script...');
+  console.log('Starting MySQL seed script...');
 
   // 1. Create Roles
   const superadminRole = await prisma.role.upsert({
     where: { name: 'SUPERADMIN' },
     update: {},
-    create: { name: 'SUPERADMIN', description: 'Full platform super administrator access' }
+    create: { id: 'role-superadmin', name: 'SUPERADMIN', description: 'Full platform super administrator access' }
   });
 
   const adminRole = await prisma.role.upsert({
     where: { name: 'ADMIN' },
     update: {},
-    create: { name: 'ADMIN', description: 'Administrator access to manage clients and analytics' }
+    create: { id: 'role-admin', name: 'ADMIN', description: 'Administrator access to manage clients and analytics' }
   });
 
-  await prisma.role.upsert({
+  const clientRole = await prisma.role.upsert({
     where: { name: 'CLIENT' },
     update: {},
-    create: { name: 'CLIENT', description: 'Client access to dashboard and reports' }
+    create: { id: 'role-client', name: 'CLIENT', description: 'Client access to dashboard and reports' }
   });
 
-  await prisma.role.upsert({
+  const userRole = await prisma.role.upsert({
     where: { name: 'USER' },
     update: {},
-    create: { name: 'USER', description: 'Regular end user access' }
+    create: { id: 'role-user', name: 'USER', description: 'Regular end user access' }
   });
 
-  console.log('Roles created/upserted successfully.');
+  const agentRole = await prisma.role.upsert({
+    where: { name: 'AGENT' },
+    update: {},
+    create: { id: 'role-agent', name: 'AGENT', description: 'Outbound Dialing Agent' }
+  });
 
-  // 2. Create Default Client
+  console.log('Roles seeded.');
+
+  // 2. Create Clients
   const defaultClient = await prisma.client.upsert({
     where: { id: 'client-default' },
     update: {},
@@ -45,14 +51,59 @@ async function main() {
       contactName: 'John Doe',
       contactEmail: 'john@example.com',
       contactPhone: '1234567890',
-      plan: 'GROWTH',
       status: 'ACTIVE'
     }
   });
 
-  console.log('Default client created/upserted successfully.');
+  const personalClient = await prisma.client.upsert({
+    where: { id: 'client-7k9o1' },
+    update: {},
+    create: {
+      id: 'client-7k9o1',
+      companyName: 'Personal Workspace',
+      contactName: 'Romaniel Rai',
+      contactEmail: 'romanielrai94@gmail.com',
+      contactPhone: '9845382623',
+      status: 'ACTIVE'
+    }
+  });
 
-  // 3. Create Users
+  console.log('Clients seeded.');
+
+  // 3. Create Agents
+  const agent1 = await prisma.agent.upsert({
+    where: { email: 'agent@gmail.com' },
+    update: {},
+    create: {
+      id: 'agent-1',
+      name: 'John Connor',
+      email: 'agent@gmail.com',
+      phone: '555-0122',
+      capacity: 1000,
+      activeTasks: 2,
+      completionRate: 92.4,
+      status: 'AVAILABLE'
+    }
+  });
+
+  const agent2 = await prisma.agent.upsert({
+    where: { email: 'sarah@resistance.net' },
+    update: {},
+    create: {
+      id: 'agent-2',
+      name: 'Sarah Connor',
+      email: 'sarah@resistance.net',
+      phone: '555-0199',
+      capacity: 1000,
+      activeTasks: 0,
+      completionRate: 95.0,
+      status: 'AVAILABLE'
+    }
+  });
+
+  console.log('Agents seeded.');
+
+  // 4. Create Users
   const passwordHash = await bcrypt.hash('AdminPass123!', 12);
 
   // Superadmin
@@ -82,34 +133,99 @@ async function main() {
     }
   });
 
-  // Legacy Admin (for backward compatibility)
-  await prisma.user.upsert({
-    where: { email: 'admin@aigrowthsystems.com' },
-    update: { passwordHash, roleId: adminRole.id, clientId: defaultClient.id },
+  // Client User
+  const clientUser = await prisma.user.upsert({
+    where: { email: 'client@gmail.com' },
+    update: { passwordHash, roleId: clientRole.id, clientId: defaultClient.id },
     create: {
-      email: 'admin@aigrowthsystems.com',
-      name: 'Admin User',
+      id: 'user-client',
+      email: 'client@gmail.com',
+      name: 'Client User',
       passwordHash,
-      roleId: adminRole.id,
+      roleId: clientRole.id,
       clientId: defaultClient.id
     }
   });
 
-  console.log('Users created/upserted successfully.');
+  // Normal User
+  const normalUser = await prisma.user.upsert({
+    where: { email: 'user@gmail.com' },
+    update: { passwordHash, roleId: userRole.id, clientId: defaultClient.id },
+    create: {
+      id: 'user-normal',
+      email: 'user@gmail.com',
+      name: 'Regular User',
+      passwordHash,
+      roleId: userRole.id,
+      clientId: defaultClient.id
+    }
+  });
 
-  // 4. Create Mock Leads
+  // Personal user (retains original password hash)
+  const personalPasswordHash = '$2a$12$R7TAOyuwotREP4GUFtt8X.TJNz.OF8yNH3cYDnHfhaO0NzNpd4ebm';
+  const personalUser = await prisma.user.upsert({
+    where: { email: 'romanielrai94@gmail.com' },
+    update: { passwordHash: personalPasswordHash, roleId: userRole.id, clientId: personalClient.id },
+    create: {
+      id: 'user-0teklu',
+      email: 'romanielrai94@gmail.com',
+      name: 'Romaniel Rai',
+      passwordHash: personalPasswordHash,
+      roleId: userRole.id,
+      clientId: personalClient.id
+    }
+  });
+
+  console.log('Users seeded.');
+
+  // 5. Create Projects
+  const project1 = await prisma.project.upsert({
+    where: { id: 'proj-1' },
+    update: {},
+    create: {
+      id: 'proj-1',
+      name: 'Spring Leads Outreach',
+      clientId: personalClient.id,
+      status: 'PENDING_APPROVAL',
+      progress: 0,
+      agentId: null,
+      startDate: null,
+      estCompletion: null,
+      actualCompletion: null
+    }
+  });
+
+  const project2 = await prisma.project.upsert({
+    where: { id: 'proj-2' },
+    update: {},
+    create: {
+      id: 'proj-2',
+      name: 'Cold Pipe Outbound 2026',
+      clientId: personalClient.id,
+      status: 'IN_PROGRESS',
+      progress: 50,
+      agentId: agent1.id,
+      startDate: new Date(Date.now() - 86400000 * 2),
+      estCompletion: new Date(Date.now() + 86400000 * 4),
+      actualCompletion: null
+    }
+  });
+
+  console.log('Projects seeded.');
+
+  // 6. Create Mock Leads
   const lead1 = await prisma.lead.upsert({
     where: { id: 'lead-1' },
     update: {},
     create: {
       id: 'lead-1',
       name: 'Sarah Connor',
-      email: 'sarah@skynet.com',
+      company: 'Cyberdyne Systems',
       phone: '555-0199',
-      business: 'Tech Corp',
+      email: 'sarah@skynet.com',
+      notes: 'Interested in missed call recovery.',
       status: 'NEW',
-      source: 'Web Form',
-      clientId: defaultClient.id
+      projectId: project2.id
     }
   });
 
@@ -118,113 +234,146 @@ async function main() {
     update: {},
     create: {
       id: 'lead-2',
-      name: 'John Connor',
-      email: 'john@resistance.net',
+      name: 'Kyle Reese',
+      company: 'Resistance Security',
       phone: '555-0122',
-      business: 'Security Inc',
-      status: 'CONTACTED',
-      source: 'Missed Call',
-      clientId: defaultClient.id
+      email: 'kyle@resistance.net',
+      notes: 'Wants automated voice test dial.',
+      status: 'FOLLOW_UP',
+      projectId: project2.id
     }
   });
 
-  console.log('Mock leads created/upserted successfully.');
-
-  // 5. Create Mock Appointments
-  await prisma.appointment.upsert({
-    where: { id: 'appt-1' },
+  const lead3 = await prisma.lead.upsert({
+    where: { id: 'lead-3' },
     update: {},
     create: {
-      id: 'appt-1',
-      clientId: defaultClient.id,
-      leadId: lead1.id,
-      title: 'AI Receptionist Onboarding Consultation',
-      scheduledAt: new Date(Date.now() + 86400000 * 2), // 2 days in future
-      status: 'PENDING',
-      notes: 'Wants custom script for tech support agency.',
-      createdById: adminUser.id
+      id: 'lead-3',
+      name: 'Marcus Wright',
+      company: 'Project Angel Inc',
+      phone: '555-0187',
+      email: 'marcus@angel.org',
+      notes: 'Objection handled - call scheduled.',
+      status: 'INTERESTED',
+      projectId: project2.id
     }
   });
 
-  await prisma.appointment.upsert({
-    where: { id: 'appt-2' },
+  const lead4 = await prisma.lead.upsert({
+    where: { id: 'lead-4' },
     update: {},
     create: {
-      id: 'appt-2',
-      clientId: defaultClient.id,
-      leadId: lead2.id,
-      title: 'Missed Call Recovery Deep Dive',
-      scheduledAt: new Date(Date.now() + 86400000 * 4), // 4 days in future
-      status: 'CONFIRMED',
-      notes: 'Interested in GHL integration.',
-      createdById: adminUser.id
+      id: 'lead-4',
+      name: 'Peter Silberman',
+      company: 'County Hospital',
+      phone: '555-0134',
+      email: 'silberman@hospital.org',
+      notes: 'No answer, retry tomorrow.',
+      status: 'NO_ANSWER',
+      projectId: project2.id
     }
   });
 
-  console.log('Mock appointments created/upserted successfully.');
+  console.log('Leads seeded.');
 
-  // Delete existing chatbot logs to prevent duplication on reseed
-  await prisma.chatbotLog.deleteMany({ where: { sessionId: 'sess-123' } });
+  // 7. Create Assignments
+  await prisma.assignment.upsert({
+    where: { id: 'assign-1' },
+    update: {},
+    create: {
+      id: 'assign-1',
+      projectId: project2.id,
+      agentId: agent1.id,
+      recordCount: 1000,
+      status: 'ASSIGNED'
+    }
+  });
 
-  // 6. Create Chatbot Logs
+  // 8. Create Notifications
+  await prisma.notification.deleteMany({});
+  await prisma.notification.createMany({
+    data: [
+      {
+        id: 'notif-1',
+        userId: clientUser.id,
+        title: 'Database Upload Queued',
+        message: 'leads_500.csv (500 records) is pending Super Admin approval.',
+        channel: 'ALL',
+        read: false
+      },
+      {
+        id: 'notif-2',
+        userId: clientUser.id,
+        title: 'Agent Assigned',
+        message: 'Agent John Connor has been assigned to Spring Tank Callouts.',
+        channel: 'IN_APP',
+        read: true
+      }
+    ]
+  });
+
+  // 9. Create Activity Logs
+  await prisma.activityLog.deleteMany({});
+  await prisma.activityLog.createMany({
+    data: [
+      {
+        id: 'act-1',
+        userId: clientUser.id,
+        action: 'Database uploaded',
+        details: 'leads_500.csv (500 records) uploaded by Client John Doe.'
+      },
+      {
+        id: 'act-2',
+        userId: clientUser.id,
+        action: 'Approved by Super Admin',
+        details: 'Database spring_leads.xlsx approved by Super Admin.'
+      },
+      {
+        id: 'act-3',
+        userId: clientUser.id,
+        action: 'Assigned to Agent John',
+        details: 'Project assigned to Agent John Connor.'
+      },
+      {
+        id: 'act-4',
+        userId: clientUser.id,
+        action: 'Agent started calling',
+        details: 'John Connor started outbound dials on project Spring Tank.'
+      }
+    ]
+  });
+
+  // 10. Create Chatbot Logs
+  await prisma.chatbotLog.deleteMany({});
   await prisma.chatbotLog.createMany({
     data: [
       {
         id: 'chatlog-1',
         sessionId: 'sess-123',
         role: 'user',
-        message: 'Hello, what are your pricing packages?',
-        metadata: JSON.stringify({ source: 'simulation' }),
-        createdAt: new Date(Date.now() - 300000)
+        message: 'Hello, what are your pricing packages?'
       },
       {
         id: 'chatlog-2',
         sessionId: 'sess-123',
         role: 'assistant',
-        message: 'We have three packages designed for real ROI. The Starter at $1,497/mo, Growth at $2,997/mo, and Dominance at $5,997/mo. Which of these sounds like the right fit for your business?',
-        metadata: JSON.stringify({ source: 'simulation' }),
-        createdAt: new Date(Date.now() - 280000)
+        message: 'We have three packages designed for real ROI. The Starter at $1,497/mo, Growth at $2,997/mo, and Dominance at $5,997/mo. Which of these sounds like the right fit for your business?'
       }
     ]
   });
 
-  console.log('Mock chatbot logs created successfully.');
-
-  // Delete existing seed audit logs to prevent duplication
-  await prisma.auditLog.deleteMany({
-    where: {
-      action: { in: ['SYSTEM_BOOT', 'USER_LOGIN'] },
-      actor: { in: ['system', 'superadmin@gmail.com'] }
+  // 11. Create Audit Logs
+  await prisma.auditLog.deleteMany({});
+  await prisma.auditLog.create({
+    data: {
+      id: 'audit-1',
+      userId: superadminUser.id,
+      action: 'SYSTEM_BOOT',
+      actor: 'system',
+      details: 'CRM Platform database client instantiated in-memory.'
     }
   });
 
-  // 7. Create Audit Logs
-  await prisma.auditLog.createMany({
-    data: [
-      {
-        id: 'audit-1',
-        action: 'SYSTEM_BOOT',
-        actor: 'system',
-        target: 'system',
-        details: 'Express Server bootstrapped with SQLite database configuration',
-        ipAddress: '127.0.0.1',
-        createdAt: new Date(Date.now() - 1000 * 60 * 10),
-        userId: superadminUser.id
-      },
-      {
-        id: 'audit-2',
-        action: 'USER_LOGIN',
-        actor: 'superadmin@gmail.com',
-        target: 'superadmin@gmail.com',
-        details: 'Super administrator logged in successfully',
-        ipAddress: '127.0.0.1',
-        createdAt: new Date(Date.now() - 1000 * 60 * 5),
-        userId: superadminUser.id
-      }
-    ]
-  });
-
-  console.log('Mock audit logs created successfully.');
   console.log('Seeding completed successfully!');
 }
 

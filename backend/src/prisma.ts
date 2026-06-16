@@ -1,3 +1,4 @@
+// Force reload updated db.json
 /* eslint-disable no-unused-vars */
 import { PrismaClient } from './prisma-client';
 

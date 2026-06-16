@@ -53,7 +53,7 @@ start "Backend Server (Port 4000)" cmd /k "cd backend && echo Starting backend s
 :: 6. Wait for Backend Health Check (GET /health) to be online
 echo [4/5] Waiting for Backend to be online...
 :wait_backend
-powershell -Command "(Invoke-WebRequest -Uri http://localhost:4000/health -UseBasicParsing).Content" >nul 2>&1
+powershell -Command "(Invoke-WebRequest -Uri http://127.0.0.1:4000/health -UseBasicParsing).Content" >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     timeout /t 1 /nobreak >nul
     goto wait_backend

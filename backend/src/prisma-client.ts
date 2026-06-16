@@ -183,12 +183,49 @@ try {
   console.error('Failed to load persistent mock database:', error);
 }
 
+// Helper to dynamically resolve relation values in matchesFilter
+function getRelationValue(modelName: string, item: any, relationKey: string): any {
+  const model = modelName.toLowerCase();
+  const rel = relationKey.toLowerCase();
+
+  if (model === 'user') {
+    if (rel === 'role') return store.role.find(r => r.id === item.roleId);
+    if (rel === 'client') return store.client.find(c => c.id === item.clientId);
+    if (rel === 'agent') return store.agent.find(a => a.id === item.agentId);
+  }
+  if (model === 'project') {
+    if (rel === 'client') return store.client.find(c => c.id === item.clientId);
+    if (rel === 'agent') return store.agent.find(a => a.id === item.agentId);
+    if (rel === 'leads') return store.lead.filter(l => l.projectId === item.id);
+    if (rel === 'uploadedfiles') return store.uploadedfile.filter(f => f.projectId === item.id);
+    if (rel === 'assignments') return store.assignment.filter(a => a.projectId === item.id);
+  }
+  if (model === 'notification') {
+    if (rel === 'user') return store.user.find(u => u.id === item.userId);
+  }
+  if (model === 'lead') {
+    if (rel === 'project') return store.project.find(p => p.id === item.projectId);
+    if (rel === 'user') return store.user.find(u => u.id === item.userId);
+  }
+  return undefined;
+}
+
 // Sub-query matching logic
-function matchesFilter(item: any, where: any): boolean {
+function matchesFilter(item: any, where: any, modelName?: string): boolean {
   if (!where) return true;
+  if (!item) return false;
+
   for (const key of Object.keys(where)) {
     const filterVal = where[key];
-    const itemVal = item[key];
+    let itemVal = item[key];
+
+    // Handle nested relation filter if itemVal is undefined and we have modelName context
+    if (itemVal === undefined && modelName) {
+      const resolved = getRelationValue(modelName, item, key);
+      if (resolved !== undefined) {
+        itemVal = resolved;
+      }
+    }
 
     if (filterVal && typeof filterVal === 'object' && !Array.isArray(filterVal)) {
       if ('equals' in filterVal) {
@@ -198,7 +235,8 @@ function matchesFilter(item: any, where: any): boolean {
       } else if ('in' in filterVal) {
         if (!Array.isArray(filterVal.in) || !filterVal.in.includes(itemVal)) return false;
       } else {
-        if (!matchesFilter(itemVal, filterVal)) return false;
+        const nextModelName = key;
+        if (!matchesFilter(itemVal, filterVal, nextModelName)) return false;
       }
     } else {
       if (itemVal !== filterVal) return false;
@@ -302,7 +340,7 @@ function createModelProxy(name: string): any {
         if (isCountLike(prop)) {
           return async (args?: any) => {
             const items = store[modelName];
-            const filtered = items.filter(item => matchesFilter(item, args?.where));
+            const filtered = items.filter(item => matchesFilter(item, args?.where, modelName));
             return filtered.length;
           };
         }
@@ -311,7 +349,7 @@ function createModelProxy(name: string): any {
           return async (args?: any) => {
             const items = store[modelName];
             if (prop === 'findMany') {
-              let filtered = items.filter(item => matchesFilter(item, args?.where));
+              let filtered = items.filter(item => matchesFilter(item, args?.where, modelName));
               if (args?.orderBy) {
                 const orderKey = Object.keys(args.orderBy)[0];
                 const orderDirection = args.orderBy[orderKey];
@@ -329,7 +367,7 @@ function createModelProxy(name: string): any {
               return filtered.map(item => resolveIncludes(modelName, item, args?.include));
             }
 
-            const item = items.find(item => matchesFilter(item, args?.where));
+            const item = items.find(item => matchesFilter(item, args?.where, modelName));
             return item ? resolveIncludes(modelName, item, args?.include) : null;
           };
         }

@@ -64,7 +64,7 @@ Write-Host "[4/5] Waiting for Backend to respond to health checks..." -Foregroun
 $beOnline = $false
 while (!$beOnline) {
     try {
-        $res = Invoke-RestMethod -Uri "http://localhost:4000/health" -UseBasicParsing -TimeoutSec 1
+        $res = Invoke-RestMethod -Uri "http://127.0.0.1:4000/health" -UseBasicParsing -TimeoutSec 1
         if ($res.status -eq "ok") {
             $beOnline = $true
         }

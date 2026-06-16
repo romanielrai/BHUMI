@@ -7,6 +7,7 @@ import {
   User, Mail, Phone, Building, Lock, CheckCircle, 
   AlertCircle, Shield, Briefcase, RefreshCw, Key
 } from 'lucide-react';
+import { getCleanDisplayName } from '../../utils/nameHelper';
 
 interface UserProfile {
   id: string;
@@ -58,7 +59,7 @@ export default function ProfilePage() {
         const data = await response.json();
         if (response.ok && data.user) {
           const u = data.user as UserProfile;
-          setName(u.name || '');
+          setName(getCleanDisplayName(u.name || '', u.email || ''));
           setEmail(u.email || '');
           setPhone(u.phone || '');
           setBusiness(u.business || '');
@@ -68,7 +69,7 @@ export default function ProfilePage() {
           const userStr = localStorage.getItem('user');
           if (userStr) {
             const u = JSON.parse(userStr);
-            setName(u.name || '');
+            setName(getCleanDisplayName(u.name || '', u.email || ''));
             setEmail(u.email || '');
             setPhone(u.phone || '');
             setBusiness(u.business || '');
@@ -81,7 +82,7 @@ export default function ProfilePage() {
         const userStr = localStorage.getItem('user');
         if (userStr) {
           const u = JSON.parse(userStr);
-          setName(u.name || '');
+          setName(getCleanDisplayName(u.name || '', u.email || ''));
           setEmail(u.email || '');
           setPhone(u.phone || '');
           setBusiness(u.business || '');
