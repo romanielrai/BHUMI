@@ -55,7 +55,14 @@ function LoginContent() {
         body: JSON.stringify({ email, password })
       });
 
-      const data = await res.json();
+      // Safely parse JSON — if backend returns HTML (offline/error page) give a friendly message
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Could not reach the server. Please make sure the backend is running and try again.');
+      }
+
       if (!res.ok) {
         throw new Error(data.error || 'Invalid email or password');
       }
@@ -66,9 +73,7 @@ function LoginContent() {
       setStatus('Access Granted! Redirecting...');
       const role = data.user?.role?.toUpperCase();
       setTimeout(() => {
-        if (role === 'SUPERADMIN') router.push('/dashboard');
-        else if (role === 'ADMIN') router.push('/dashboard');
-        else router.push('/dashboard');
+        router.push('/dashboard');
       }, 800);
     } catch (err: any) {
       setErrorMsg(err.message || 'An unexpected connection error occurred.');

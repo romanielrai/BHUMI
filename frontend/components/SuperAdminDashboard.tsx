@@ -81,6 +81,8 @@ export default function SuperAdminDashboard() {
   const [assignTargetType, setAssignTargetType] = useState<'list' | 'leads'>('list');
   const [selectedEmployeeForAssign, setSelectedEmployeeForAssign] = useState<string>('');
   const [prospectStatusMsg, setProspectStatusMsg] = useState<string>('');
+  // Tracks the current assignment info shown in the assign modal
+  const [currentAssignmentInfo, setCurrentAssignmentInfo] = useState<{ name: string; id: string } | null>(null);
 
   // --- Employee Management States ---
   const [employees, setEmployees] = useState<any[]>([]);
@@ -620,7 +622,28 @@ export default function SuperAdminDashboard() {
 
   const triggerAssign = (targetType: 'list' | 'leads', targetIdOrIds: any) => {
     setAssignTargetType(targetType);
-    setSelectedEmployeeForAssign(employees[0]?.id || '');
+    setSelectedEmployeeForAssign('');
+
+    // Determine current assignment to show in modal
+    if (targetType === 'list') {
+      const proj = prospectSummary.find(p => p.id === selectedProjectId);
+      if (proj?.assignedTo) {
+        setCurrentAssignmentInfo({ name: proj.assignedTo.name, id: proj.assignedTo.id || '' });
+      } else {
+        setCurrentAssignmentInfo(null);
+      }
+    } else {
+      // For individual leads: show assignment if exactly one lead selected
+      const ids = Array.isArray(targetIdOrIds) ? targetIdOrIds : [targetIdOrIds];
+      if (ids.length === 1) {
+        const lead = projectLeads.find(l => l.id === ids[0]);
+        const emp = lead ? employees.find(e => e.id === lead.userId || e.agentId === lead.userId) : null;
+        setCurrentAssignmentInfo(emp ? { name: emp.name, id: emp.id } : null);
+      } else {
+        setCurrentAssignmentInfo(null);
+      }
+    }
+
     setAssignModalOpen(true);
   };
 
@@ -646,8 +669,8 @@ export default function SuperAdminDashboard() {
       });
 
       if (res.ok) {
-        alert('Prospects successfully assigned!');
         setAssignModalOpen(false);
+        setSelectedLeadIds([]);
         fetchData();
         if (selectedProjectId) {
           fetchProjectLeads(selectedProjectId);
@@ -658,6 +681,42 @@ export default function SuperAdminDashboard() {
       }
     } catch (e) {
       alert('Error assigning prospects.');
+    }
+  };
+
+  const confirmUnassign = async () => {
+    if (!confirm('Remove current assignment? Prospects will become unassigned.')) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const payload: any = { employeeId: null };
+      if (assignTargetType === 'list') {
+        payload.projectId = selectedProjectId;
+      } else {
+        payload.leadIds = selectedLeadIds;
+      }
+
+      const res = await fetch('/api/superadmin/prospects/assign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        setAssignModalOpen(false);
+        setSelectedLeadIds([]);
+        fetchData();
+        if (selectedProjectId) fetchProjectLeads(selectedProjectId);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Unassign failed.');
+      }
+    } catch {
+      alert('Error removing assignment.');
     }
   };
 
@@ -1416,141 +1475,178 @@ export default function SuperAdminDashboard() {
           </div>
 
           {/* Individual Prospects / Leads table */}
-          {selectedProjectId && (
-            <div className="rounded-2xl border border-white/10 bg-background/50 p-6 backdrop-blur-md space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/5 pb-3">
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Prospects inside list</h3>
-                  <p className="text-[10px] text-white/40">Select individual prospects to manually allocate them to staff.</p>
-                </div>
+          {selectedProjectId && (() => {
+            const filteredLeads = projectLeads.filter(
+              l => l.name.toLowerCase().includes(leadSearch.toLowerCase()) || l.company.toLowerCase().includes(leadSearch.toLowerCase())
+            );
+            const allFilteredSelected = filteredLeads.length > 0 && filteredLeads.every(l => selectedLeadIds.includes(l.id));
+            const someFilteredSelected = filteredLeads.some(l => selectedLeadIds.includes(l.id)) && !allFilteredSelected;
 
-                <div className="flex items-center gap-2">
-                  <div className="relative rounded-xl bg-white/5 border border-white/10 flex items-center px-3.5 max-w-xs w-full">
-                    <Search size={13} className="text-white/40 mr-2" />
-                    <input
-                      type="text"
-                      placeholder="Search prospects..."
-                      value={leadSearch}
-                      onChange={(e) => setLeadSearch(e.target.value)}
-                      className="bg-transparent py-2 text-xs text-white outline-none w-full placeholder-white/30"
-                    />
+            return (
+              <div className="rounded-2xl border border-white/10 bg-background/50 p-6 backdrop-blur-md space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/5 pb-3">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Prospects inside list</h3>
+                    <p className="text-[10px] text-white/40">
+                      {selectedLeadIds.length > 0
+                        ? <span className="text-purple-300 font-bold">{selectedLeadIds.length} selected</span>
+                        : 'Select individual prospects to manually allocate them to staff.'}
+                    </p>
                   </div>
 
-                  {selectedLeadIds.length > 0 && (
-                    <button
-                      onClick={() => triggerAssign('leads', selectedLeadIds)}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 text-xs font-bold transition shadow-md shadow-purple-500/15"
-                    >
-                      <UserPlus size={12} />
-                      <span>Assign Selected ({selectedLeadIds.length})</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="relative rounded-xl bg-white/5 border border-white/10 flex items-center px-3.5">
+                      <Search size={13} className="text-white/40 mr-2" />
+                      <input
+                        type="text"
+                        placeholder="Search prospects..."
+                        value={leadSearch}
+                        onChange={(e) => setLeadSearch(e.target.value)}
+                        className="bg-transparent py-2 text-xs text-white outline-none w-36 placeholder-white/30"
+                      />
+                    </div>
 
-              <div className="overflow-x-auto rounded-xl border border-white/5 bg-white/[0.01]">
-                <table className="w-full text-left border-collapse text-xs text-white/80">
-                  <thead>
-                    <tr className="border-b border-white/10 bg-white/5 text-white/40 text-[10px] font-bold uppercase tracking-wider">
-                      <th className="px-4 py-3 text-center w-10">
-                        <input
-                          type="checkbox"
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedLeadIds(projectLeads.map(l => l.id));
-                            } else {
-                              setSelectedLeadIds([]);
-                            }
-                          }}
-                          checked={selectedLeadIds.length === projectLeads.length && projectLeads.length > 0}
-                          className="rounded border-white/10 bg-transparent text-purple-600 focus:ring-0 outline-none"
-                        />
-                      </th>
-                      <th className="px-4 py-3">Prospect Details</th>
-                      <th className="px-4 py-3">Decision Maker Contact</th>
-                      <th className="px-4 py-3">Call status</th>
-                      <th className="px-4 py-3">Assigned To</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 font-medium">
-                    {projectLeads.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-4 py-6 text-center text-white/30">No prospects available.</td>
+                    {selectedLeadIds.length > 0 && (
+                      <button
+                        onClick={() => triggerAssign('leads', selectedLeadIds)}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 text-xs font-bold transition shadow-md shadow-purple-500/15"
+                      >
+                        <UserPlus size={12} />
+                        <span>Assign Selected ({selectedLeadIds.length})</span>
+                      </button>
+                    )}
+
+                    {selectedLeadIds.length > 0 && (
+                      <button
+                        onClick={() => setSelectedLeadIds([])}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white/60 hover:text-white px-3 py-2 text-xs font-bold transition"
+                      >
+                        <X size={12} />
+                        <span>Clear</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-white/5 bg-white/[0.01]">
+                  <table className="w-full text-left border-collapse text-xs text-white/80">
+                    <thead>
+                      <tr className="border-b border-white/10 bg-white/5 text-white/40 text-[10px] font-bold uppercase tracking-wider">
+                        <th className="px-4 py-3 text-center w-10">
+                          <input
+                            type="checkbox"
+                            ref={el => {
+                              if (el) el.indeterminate = someFilteredSelected;
+                            }}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                // Select all filtered leads
+                                const filteredIds = filteredLeads.map(l => l.id);
+                                setSelectedLeadIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+                              } else {
+                                // Deselect all filtered leads
+                                const filteredIds = new Set(filteredLeads.map(l => l.id));
+                                setSelectedLeadIds(prev => prev.filter(id => !filteredIds.has(id)));
+                              }
+                            }}
+                            checked={allFilteredSelected}
+                            className="rounded border-white/10 bg-transparent text-purple-600 focus:ring-0 outline-none cursor-pointer"
+                            title={allFilteredSelected ? 'Deselect all visible' : 'Select all visible'}
+                          />
+                        </th>
+                        <th className="px-4 py-3">Prospect Details</th>
+                        <th className="px-4 py-3">Decision Maker Contact</th>
+                        <th className="px-4 py-3">Call status</th>
+                        <th className="px-4 py-3">Assigned To</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
                       </tr>
-                    ) : (
-                      projectLeads
-                        .filter(l => l.name.toLowerCase().includes(leadSearch.toLowerCase()) || l.company.toLowerCase().includes(leadSearch.toLowerCase()))
-                        .map((l) => (
-                          <tr key={l.id} className="hover:bg-white/[0.01] transition-colors">
-                            <td className="px-4 py-3.5 text-center">
-                              <input
-                                type="checkbox"
-                                checked={selectedLeadIds.includes(l.id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedLeadIds([...selectedLeadIds, l.id]);
-                                  } else {
-                                    setSelectedLeadIds(selectedLeadIds.filter(id => id !== l.id));
-                                  }
-                                }}
-                                className="rounded border-white/10 bg-transparent text-purple-600 focus:ring-0 outline-none"
-                              />
-                            </td>
-                            <td className="px-4 py-3.5">
-                              <div className="space-y-0.5">
-                                <span className="font-bold text-white block">{l.name}</span>
-                                <span className="text-2xs text-white/40 block">{l.company}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3.5 font-mono">
-                              <div className="space-y-0.5">
-                                <span className="block text-white/70 font-semibold">{l.phone || 'No Phone'}</span>
-                                <span className="block text-[10px] text-white/40">{l.email || 'No Email'}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3.5">
-                              <span className={`text-[8.5px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
-                                l.status === 'CLOSED' || l.status.includes('Closed') ? 'bg-emerald-500/10 border-emerald-500/15 text-emerald-400' :
-                                l.status.includes('Well') ? 'bg-purple-500/10 border-purple-500/15 text-purple-400' :
-                                l.status.includes('Scheduled') || l.status === 'FOLLOW_UP' ? 'bg-blue-500/10 border-blue-500/15 text-blue-400' :
-                                l.status.includes('Poorly') ? 'bg-yellow-500/10 border-yellow-500/15 text-yellow-400' :
-                                l.status.includes('Failed') || l.status === 'LOST' ? 'bg-red-500/10 border-red-500/15 text-red-400' :
-                                'bg-white/5 border-white/5 text-white/60'
-                              }`}>
-                                {l.status.replace('_', ' ')}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3.5">
-                              {(() => {
-                                const emp = employees.find(e => e.id === l.userId || e.agentId === l.userId);
-                                return emp ? (
-                                  <span className="text-emerald-400 font-bold text-[10.5px]">{emp.name}</span>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 font-medium">
+                      {projectLeads.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-6 text-center text-white/30">No prospects available.</td>
+                        </tr>
+                      ) : filteredLeads.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-6 text-center text-white/30">No prospects match your search.</td>
+                        </tr>
+                      ) : (
+                        filteredLeads.map((l) => {
+                          const assignedEmp = employees.find(e => e.id === l.userId || e.agentId === l.userId);
+                          return (
+                            <tr
+                              key={l.id}
+                              className={`hover:bg-white/[0.01] transition-colors ${
+                                selectedLeadIds.includes(l.id) ? 'bg-purple-950/10 border-l-2 border-purple-500/40' : ''
+                              }`}
+                            >
+                              <td className="px-4 py-3.5 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedLeadIds.includes(l.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedLeadIds(prev => [...prev, l.id]);
+                                    } else {
+                                      setSelectedLeadIds(prev => prev.filter(id => id !== l.id));
+                                    }
+                                  }}
+                                  className="rounded border-white/10 bg-transparent text-purple-600 focus:ring-0 outline-none cursor-pointer"
+                                />
+                              </td>
+                              <td className="px-4 py-3.5">
+                                <div className="space-y-0.5">
+                                  <span className="font-bold text-white block">{l.name}</span>
+                                  <span className="text-2xs text-white/40 block">{l.company}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3.5 font-mono">
+                                <div className="space-y-0.5">
+                                  <span className="block text-white/70 font-semibold">{l.phone || 'No Phone'}</span>
+                                  <span className="block text-[10px] text-white/40">{l.email || 'No Email'}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3.5">
+                                <span className={`text-[8.5px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
+                                  l.status === 'CLOSED' || l.status.includes('Closed') ? 'bg-emerald-500/10 border-emerald-500/15 text-emerald-400' :
+                                  l.status.includes('Well') ? 'bg-purple-500/10 border-purple-500/15 text-purple-400' :
+                                  l.status.includes('Scheduled') || l.status === 'FOLLOW_UP' ? 'bg-blue-500/10 border-blue-500/15 text-blue-400' :
+                                  l.status.includes('Poorly') ? 'bg-yellow-500/10 border-yellow-500/15 text-yellow-400' :
+                                  l.status.includes('Failed') || l.status === 'LOST' ? 'bg-red-500/10 border-red-500/15 text-red-400' :
+                                  'bg-white/5 border-white/5 text-white/60'
+                                }`}>
+                                  {l.status.replace('_', ' ')}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3.5">
+                                {assignedEmp ? (
+                                  <span className="text-emerald-400 font-bold text-[10.5px]">{assignedEmp.name}</span>
                                 ) : (
                                   <span className="text-white/30 text-[10px] italic">Unassigned</span>
-                                );
-                              })()}
-                            </td>
-                            <td className="px-4 py-3.5 text-right">
-                              <button
-                                onClick={() => {
-                                  setSelectedLeadIds([l.id]);
-                                  triggerAssign('leads', [l.id]);
-                                }}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition"
-                                title="Assign Lead"
-                              >
-                                <UserPlus size={11} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                    )}
-                  </tbody>
-                </table>
+                                )}
+                              </td>
+                              <td className="px-4 py-3.5 text-right">
+                                <button
+                                  onClick={() => {
+                                    setSelectedLeadIds([l.id]);
+                                    triggerAssign('leads', [l.id]);
+                                  }}
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition"
+                                  title="Assign Lead"
+                                >
+                                  <UserPlus size={11} />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       )}
 
@@ -1731,7 +1827,11 @@ export default function SuperAdminDashboard() {
       {/* ── PROSPECT ASSIGN MODAL ── */}
       {assignModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#060b1b] p-6 space-y-5 shadow-2xl text-left">
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#060b1b] p-6 space-y-5 shadow-2xl text-left"
+          >
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <UserCheck size={16} className="text-purple-400" />
@@ -1743,21 +1843,70 @@ export default function SuperAdminDashboard() {
             </div>
 
             <div className="space-y-4">
+
+              {/* What's being assigned */}
+              <div className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3 text-xs">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-white/40 block mb-1">Assigning</span>
+                {assignTargetType === 'list' ? (
+                  <span className="text-white font-semibold">
+                    Entire list: <span className="text-purple-300">{prospectSummary.find(p => p.id === selectedProjectId)?.name || 'Selected list'}</span>
+                  </span>
+                ) : (
+                  <span className="text-white font-semibold">
+                    <span className="text-purple-300">{selectedLeadIds.length}</span> selected prospect{selectedLeadIds.length !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+
+              {/* Current assignment indicator */}
+              {currentAssignmentInfo ? (
+                <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 px-4 py-3 space-y-2">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70 block">Currently assigned to</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-300 font-extrabold text-[9px] uppercase">
+                        {currentAssignmentInfo.name.charAt(0)}
+                      </div>
+                      <span className="text-amber-300 font-bold text-xs">{currentAssignmentInfo.name}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={confirmUnassign}
+                      className="text-[9px] font-bold text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-400/40 bg-red-950/20 hover:bg-red-950/40 rounded-lg px-2 py-1 transition"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-white/5 bg-white/[0.01] px-4 py-2.5">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Currently assigned to</span>
+                  <span className="text-white/30 text-[10.5px] italic">Unassigned</span>
+                </div>
+              )}
+
+              {/* Employee selector */}
               <div>
-                <label className="text-[9.5px] font-bold text-white/40 tracking-wider uppercase block mb-1">Select Employee / Agent</label>
+                <label className="text-[9.5px] font-bold text-white/40 tracking-wider uppercase block mb-1">
+                  {currentAssignmentInfo ? 'Reassign to' : 'Assign to'}
+                </label>
                 <select
                   value={selectedEmployeeForAssign}
                   onChange={(e) => setSelectedEmployeeForAssign(e.target.value)}
                   className="w-full rounded-xl bg-background border border-white/10 px-3.5 py-3 text-xs text-white outline-none focus:border-purple-400 transition"
                 >
-                  <option value="" disabled>Choose an employee...</option>
+                  <option value="">Choose an employee...</option>
                   {employees.map(e => (
-                    <option key={e.id} value={e.id}>{e.name} ({e.designation?.name || 'Agent'})</option>
+                    <option key={e.id} value={e.id}
+                      style={currentAssignmentInfo?.id === e.id ? { fontWeight: 'bold' } : {}}
+                    >
+                      {e.name} ({e.designation?.name || 'Agent'}){currentAssignmentInfo?.id === e.id ? ' — current' : ''}
+                    </option>
                   ))}
                 </select>
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setAssignModalOpen(false)}
@@ -1768,13 +1917,14 @@ export default function SuperAdminDashboard() {
                 <button
                   type="button"
                   onClick={confirmAssignment}
-                  className="w-1/2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white py-2.5 text-xs font-bold transition shadow-md shadow-purple-500/10"
+                  disabled={!selectedEmployeeForAssign}
+                  className="w-1/2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2.5 text-xs font-bold transition shadow-md shadow-purple-500/10"
                 >
-                  Confirm Allocation
+                  {currentAssignmentInfo ? 'Reassign' : 'Confirm Assign'}
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
