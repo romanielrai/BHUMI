@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         role: dbUser.role?.name,
         phone: dbUser.phone || dbUser.client?.contactPhone || '',
         business: dbUser.client?.companyName || '',
-        agentId: dbUser.agentId || '',
+        adminId: dbUser.adminId || '',
         clientId: dbUser.clientId || '',
       },
     });
@@ -80,7 +80,7 @@ export async function PATCH(req: NextRequest) {
         role: updatedUser.role?.name,
         phone: updatedUser.phone || updatedUser.client?.contactPhone || phone || '',
         business: updatedUser.client?.companyName || business || '',
-        agentId: updatedUser.agentId || '',
+        adminId: updatedUser.adminId || '',
         clientId: updatedUser.clientId || '',
       },
     });

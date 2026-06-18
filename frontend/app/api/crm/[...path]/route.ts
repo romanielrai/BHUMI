@@ -41,7 +41,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
     const projects = await prisma.project.findMany({
       include: {
         client: true,
-        agent: true,
+        admin: true,
         uploadedFiles: true,
         leads: true,
       },
@@ -52,32 +52,32 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
 
   // GET /api/crm/workload
   if (path === 'workload') {
-    const agents = await prisma.agent.findMany();
-    const metrics = agents.map((agent: any) => ({
-      id: agent.id,
-      name: agent.name,
-      capacity: agent.capacity,
-      activeTasks: agent.activeTasks,
-      completionRate: agent.completionRate,
+    const admins = await prisma.admin.findMany();
+    const metrics = admins.map((admin: any) => ({
+      id: admin.id,
+      name: admin.name,
+      capacity: admin.capacity,
+      activeTasks: admin.activeTasks,
+      completionRate: admin.completionRate,
     }));
     return json({ metrics });
   }
 
-  // GET /api/crm/agent-leads/[projectId]
-  if (path.startsWith('agent-leads/')) {
+  // GET /api/crm/admin-leads/[projectId]
+  if (path.startsWith('admin-leads/')) {
     const projectId = resolvedParams.path[1];
-    const isAgent = user.role === 'AGENT' || user.role === 'EMPLOYEE' || user.role === 'TEAMLEADER';
+    const isAdmin = user.role === 'ADMIN' || user.role === 'EMPLOYEE' || user.role === 'TEAMLEADER';
     const filter: any = { projectId };
-    if (isAgent) {
+    if (isAdmin) {
       const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-      filter.userId = { in: [user.id, dbUser?.agentId || ''] };
+      filter.userId = { in: [user.id, dbUser?.adminId || ''] };
     }
     const leads = await prisma.lead.findMany({ where: filter });
     return json({ leads });
   }
 
-  // GET /api/crm/agent/daily-planner
-  if (path === 'agent/daily-planner') {
+  // GET /api/crm/admin/daily-planner
+  if (path === 'admin/daily-planner') {
     const todayStr = new Date().toISOString().split('T')[0];
     let planner = await prisma.dailyPlanner.findFirst({
       where: { userId: user.id, date: todayStr },
@@ -101,8 +101,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
     return json({ planner, meetings, tasks });
   }
 
-  // GET /api/crm/agent/daily-updates
-  if (path === 'agent/daily-updates') {
+  // GET /api/crm/admin/daily-updates
+  if (path === 'admin/daily-updates') {
     const updates = await prisma.dailyUpdate.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
@@ -270,28 +270,28 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
   // POST /api/crm/projects/[id]/distribute
   if (resolvedParams.path[0] === 'projects' && resolvedParams.path[2] === 'distribute') {
     const id = resolvedParams.path[1];
-    const { agentSplits, auto } = body;
+    const { adminSplits, auto } = body;
 
     const project = await prisma.project.findUnique({ where: { id }, include: { client: true } });
     if (!project) return json({ error: 'Project not found' }, 404);
 
     const totalLeads = await prisma.lead.count({ where: { projectId: id } });
-    const agents = await prisma.agent.findMany({ where: { status: 'AVAILABLE' } });
-    if (agents.length === 0) {
-      return json({ error: 'No active agents available for distribution splits.' }, 400);
+    const admins = await prisma.admin.findMany({ where: { status: 'AVAILABLE' } });
+    if (admins.length === 0) {
+      return json({ error: 'No active admins available for distribution splits.' }, 400);
     }
 
-    let distributions: Array<{ agentId: string; count: number }> = [];
+    let distributions: Array<{ adminId: string; count: number }> = [];
     if (auto) {
-      const splitCount = Math.floor(totalLeads / agents.length);
-      distributions = agents.map((agent: any, index: number) => ({
-        agentId: agent.id,
-        count: index === agents.length - 1 ? totalLeads - splitCount * index : splitCount,
+      const splitCount = Math.floor(totalLeads / admins.length);
+      distributions = admins.map((admin: any, index: number) => ({
+        adminId: admin.id,
+        count: index === admins.length - 1 ? totalLeads - splitCount * index : splitCount,
       }));
-    } else if (agentSplits && Array.isArray(agentSplits)) {
-      distributions = agentSplits;
+    } else if (adminSplits && Array.isArray(adminSplits)) {
+      distributions = adminSplits;
     } else {
-      return json({ error: 'Please specify agent splits or select auto-distribution.' }, 400);
+      return json({ error: 'Please specify admin splits or select auto-distribution.' }, 400);
     }
 
     const leads = await prisma.lead.findMany({ where: { projectId: id } });
@@ -301,59 +301,59 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
       await prisma.assignment.create({
         data: {
           projectId: id,
-          agentId: dist.agentId,
+          adminId: dist.adminId,
           recordCount: dist.count,
         },
       });
 
-      await prisma.agent.update({
-        where: { id: dist.agentId },
+      await prisma.admin.update({
+        where: { id: dist.adminId },
         data: { activeTasks: { increment: 1 } },
       });
 
       const endIdx = Math.min(leadIndex + dist.count, leads.length);
       for (let i = leadIndex; i < endIdx; i++) {
-        // Find corresponding user representing this agent to assign leads userId
-        const agentUser = await prisma.user.findFirst({ where: { agentId: dist.agentId } });
+        // Find corresponding user representing this admin to assign leads userId
+        const adminUser = await prisma.user.findFirst({ where: { adminId: dist.adminId } });
         await prisma.lead.update({
           where: { id: leads[i].id },
-          data: { userId: agentUser?.id || null },
+          data: { userId: adminUser?.id || null },
         });
       }
       leadIndex = endIdx;
     }
 
-    const primaryAgentId = distributions[0]?.agentId || null;
+    const primaryAdminId = distributions[0]?.adminId || null;
     const updated = await prisma.project.update({
       where: { id },
-      data: { status: 'AGENT_ASSIGNED', agentId: primaryAgentId },
+      data: { status: 'ADMIN_ASSIGNED', adminId: primaryAdminId },
     });
 
-    const primaryAgent = primaryAgentId ? await prisma.agent.findUnique({ where: { id: primaryAgentId } }) : null;
+    const primaryAdmin = primaryAdminId ? await prisma.admin.findUnique({ where: { id: primaryAdminId } }) : null;
     const clientUsers = await prisma.user.findMany({ where: { clientId: project.clientId } });
     for (const u of clientUsers) {
       await prisma.notification.create({
         data: {
           userId: u.id,
-          title: 'Agent Assigned',
-          message: `Agent ${primaryAgent?.name || 'Staff'} has been assigned to project "${project.name}".`,
+          title: 'Admin Assigned',
+          message: `Admin ${primaryAdmin?.name || 'Staff'} has been assigned to project "${project.name}".`,
         },
       });
       await prisma.activityLog.create({
         data: {
           userId: u.id,
-          action: 'Assigned to Agent',
-          details: `Project "${project.name}" assigned to Agent ${primaryAgent?.name || 'Staff'}.`,
+          action: 'Assigned to Admin',
+          details: `Project "${project.name}" assigned to Admin ${primaryAdmin?.name || 'Staff'}.`,
         },
       });
     }
 
     for (const dist of distributions) {
-      const agentUser = await prisma.user.findFirst({ where: { agentId: dist.agentId } });
-      if (agentUser) {
+      const adminUser = await prisma.user.findFirst({ where: { adminId: dist.adminId } });
+      if (adminUser) {
         await prisma.notification.create({
           data: {
-            userId: agentUser.id,
+            userId: adminUser.id,
             title: 'New Work Assigned',
             message: `You have been allocated ${dist.count} records on campaign "${project.name}".`,
           },
@@ -364,8 +364,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
     return json({ project: updated, distributions });
   }
 
-  // POST /api/crm/agent/daily-planner/target
-  if (path === 'agent/daily-planner/target') {
+  // POST /api/crm/admin/daily-planner/target
+  if (path === 'admin/daily-planner/target') {
     const { target } = body;
     if (target === undefined) return json({ error: 'Target value is required' }, 400);
 
@@ -392,8 +392,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
     return json({ planner });
   }
 
-  // POST /api/crm/agent/daily-planner/meeting
-  if (path === 'agent/daily-planner/meeting') {
+  // POST /api/crm/admin/daily-planner/meeting
+  if (path === 'admin/daily-planner/meeting') {
     const { time, prospectName, purpose } = body;
     if (!time || !prospectName) return json({ error: 'Time and prospectName are required' }, 400);
 
@@ -411,8 +411,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
     return json({ meeting });
   }
 
-  // POST /api/crm/agent/daily-planner/task
-  if (path === 'agent/daily-planner/task') {
+  // POST /api/crm/admin/daily-planner/task
+  if (path === 'admin/daily-planner/task') {
     const { title } = body;
     if (!title) return json({ error: 'Title is required' }, 400);
 
@@ -428,8 +428,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pat
     return json({ task });
   }
 
-  // POST /api/crm/agent/daily-update
-  if (path === 'agent/daily-update') {
+  // POST /api/crm/admin/daily-update
+  if (path === 'admin/daily-update') {
     const { summary } = body;
     if (!summary) return json({ error: 'Summary is required' }, 400);
 
@@ -514,8 +514,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ pa
     return json({ project: updated });
   }
 
-  // PATCH /api/crm/projects/:id/agent-work
-  if (pathParts[0] === 'projects' && pathParts[2] === 'agent-work') {
+  // PATCH /api/crm/projects/:id/admin-work
+  if (pathParts[0] === 'projects' && pathParts[2] === 'admin-work') {
     const id = pathParts[1];
     const { action } = body;
 
@@ -545,7 +545,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ pa
       data: { status, progress, startDate, actualCompletion },
     });
 
-    const actionText = action === 'START' ? 'Agent started calling' : action === 'PAUSE' ? 'Work paused' : 'Project completed';
+    const actionText = action === 'START' ? 'Admin started calling' : action === 'PAUSE' ? 'Work paused' : 'Project completed';
     const clientUsers = await prisma.user.findMany({ where: { clientId: project.clientId } });
     for (const u of clientUsers) {
       await prisma.notification.create({
@@ -626,8 +626,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ pa
     return json({ lead: updated });
   }
 
-  // PATCH /api/crm/agent/daily-planner/meeting/:id
-  if (pathParts[0] === 'agent' && pathParts[1] === 'daily-planner' && pathParts[2] === 'meeting' && pathParts[3]) {
+  // PATCH /api/crm/admin/daily-planner/meeting/:id
+  if (pathParts[0] === 'admin' && pathParts[1] === 'daily-planner' && pathParts[2] === 'meeting' && pathParts[3]) {
     const id = pathParts[3];
     const { completed, time, prospectName, purpose } = body;
 
@@ -644,8 +644,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ pa
     return json({ meeting });
   }
 
-  // PATCH /api/crm/agent/daily-planner/task/:id
-  if (pathParts[0] === 'agent' && pathParts[1] === 'daily-planner' && pathParts[2] === 'task' && pathParts[3]) {
+  // PATCH /api/crm/admin/daily-planner/task/:id
+  if (pathParts[0] === 'admin' && pathParts[1] === 'daily-planner' && pathParts[2] === 'task' && pathParts[3]) {
     const id = pathParts[3];
     const { completed, title } = body;
 
@@ -671,15 +671,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ p
   const resolvedParams = await params;
   const pathParts = resolvedParams.path;
 
-  // DELETE /api/crm/agent/daily-planner/meeting/:id
-  if (pathParts[0] === 'agent' && pathParts[1] === 'daily-planner' && pathParts[2] === 'meeting' && pathParts[3]) {
+  // DELETE /api/crm/admin/daily-planner/meeting/:id
+  if (pathParts[0] === 'admin' && pathParts[1] === 'daily-planner' && pathParts[2] === 'meeting' && pathParts[3]) {
     const id = pathParts[3];
     await prisma.employeeMeeting.delete({ where: { id } });
     return json({ success: true });
   }
 
-  // DELETE /api/crm/agent/daily-planner/task/:id
-  if (pathParts[0] === 'agent' && pathParts[1] === 'daily-planner' && pathParts[2] === 'task' && pathParts[3]) {
+  // DELETE /api/crm/admin/daily-planner/task/:id
+  if (pathParts[0] === 'admin' && pathParts[1] === 'daily-planner' && pathParts[2] === 'task' && pathParts[3]) {
     const id = pathParts[3];
     await prisma.employeeTask.delete({ where: { id } });
     return json({ success: true });

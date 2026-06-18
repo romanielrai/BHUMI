@@ -14,7 +14,7 @@ const store: Record<string, any[]> = {
     {
       id: 'user-superadmin',
       email: 'superadmin@gmail.com',
-      name: 'Super Administrator',
+      name: 'Super Admin',
       passwordHash: bcrypt.hashSync('AdminPass123!', 10),
       roleId: 'role-superadmin',
       suspended: false,
@@ -35,12 +35,12 @@ const store: Record<string, any[]> = {
       joiningDate: new Date().toISOString(),
     },
     {
-      id: 'user-agent',
-      email: 'agent@gmail.com',
-      name: 'John Connor',
+      id: 'user-admin',
+      email: 'admin@gmail.com',
+      name: 'Admin',
       passwordHash: bcrypt.hashSync('AdminPass123!', 10),
-      roleId: 'role-agent',
-      agentId: 'agent-1',
+      roleId: 'role-admin',
+      adminId: 'admin-1',
       suspended: false,
       phone: '555-0122',
       status: 'ACTIVE',
@@ -61,13 +61,13 @@ const store: Record<string, any[]> = {
     },
     { id: 'client-default', companyName: 'Default Client', contactName: 'Admin', contactEmail: 'admin@portal.com', contactPhone: '', plan: 'GROWTH', status: 'ACTIVE', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
   ],
-  agent: [
-    { id: 'agent-1', name: 'John Connor', email: 'agent@gmail.com', phone: '555-0122', capacity: 1000, activeTasks: 2, completionRate: 92.4, status: 'AVAILABLE', createdAt: new Date().toISOString() },
-    { id: 'agent-2', name: 'Sarah Connor', email: 'sarah@resistance.net', phone: '555-0199', capacity: 1000, activeTasks: 0, completionRate: 95.0, status: 'AVAILABLE', createdAt: new Date().toISOString() },
+  admin: [
+    { id: 'admin-1', name: 'Admin', email: 'admin@gmail.com', phone: '555-0122', capacity: 1000, activeTasks: 2, completionRate: 92.4, status: 'AVAILABLE', createdAt: new Date().toISOString() },
+    { id: 'admin-2', name: 'Admin', email: 'admin@resistance.net', phone: '555-0199', capacity: 1000, activeTasks: 0, completionRate: 95.0, status: 'AVAILABLE', createdAt: new Date().toISOString() },
   ],
   project: [
-    { id: 'proj-1', name: 'Spring Leads Outreach', clientId: 'client-1', status: 'PENDING_APPROVAL', progress: 0, agentId: null, startDate: null, estCompletion: null, actualCompletion: null, createdAt: new Date(Date.now() - 3600000).toISOString() },
-    { id: 'proj-2', name: 'Cold Pipe Outbound 2026', clientId: 'client-1', status: 'IN_PROGRESS', progress: 50, agentId: 'agent-1', startDate: new Date(Date.now() - 86400000 * 2).toISOString(), estCompletion: new Date(Date.now() + 86400000 * 4).toISOString(), actualCompletion: null, createdAt: new Date(Date.now() - 86400000 * 2).toISOString() },
+    { id: 'proj-1', name: 'Spring Leads Outreach', clientId: 'client-1', status: 'PENDING_APPROVAL', progress: 0, adminId: null, startDate: null, estCompletion: null, actualCompletion: null, createdAt: new Date(Date.now() - 3600000).toISOString() },
+    { id: 'proj-2', name: 'Cold Pipe Outbound 2026', clientId: 'client-1', status: 'IN_PROGRESS', progress: 50, adminId: 'admin-1', startDate: new Date(Date.now() - 86400000 * 2).toISOString(), estCompletion: new Date(Date.now() + 86400000 * 4).toISOString(), actualCompletion: null, createdAt: new Date(Date.now() - 86400000 * 2).toISOString() },
   ],
   uploadedfile: [
     { id: 'file-1', fileName: 'leads_500.csv', fileType: 'CSV', recordCount: 500, status: 'PENDING_APPROVAL', clientId: 'client-1', projectId: 'proj-1', createdAt: new Date(Date.now() - 3600000).toISOString() },
@@ -80,7 +80,7 @@ const store: Record<string, any[]> = {
     { id: 'lead-4', name: 'Peter Silberman', company: 'County Hospital', phone: '555-0134', email: 'silberman@hospital.org', notes: 'No answer, retry tomorrow.', status: 'NO_ANSWER', projectId: 'proj-2', userId: null, clientId: 'client-1', createdAt: new Date().toISOString() },
   ],
   assignment: [
-    { id: 'assign-1', projectId: 'proj-2', agentId: 'agent-1', recordCount: 1000, status: 'ASSIGNED', createdAt: new Date(Date.now() - 86400000 * 2).toISOString() },
+    { id: 'assign-1', projectId: 'proj-2', adminId: 'admin-1', recordCount: 1000, status: 'ASSIGNED', createdAt: new Date(Date.now() - 86400000 * 2).toISOString() },
   ],
   notification: [
     { id: 'notif-1', userId: 'user-client', title: 'Database Upload Queued', message: 'leads_500.csv (500 records) is pending Super Admin approval.', channel: 'ALL', read: false, createdAt: new Date(Date.now() - 3600000).toISOString() },
@@ -136,10 +136,10 @@ function resolveIncludes(modelName: string, item: any, include: any): any {
     if (!include[relation]) continue;
     if (relation === 'role' && modelName === 'user') resolved.role = store.role.find(r => r.id === item.roleId) ?? null;
     if (relation === 'client' && modelName === 'user') resolved.client = store.client.find(c => c.id === item.clientId) ?? null;
-    if (relation === 'agent' && modelName === 'user') resolved.agent = store.agent.find(a => a.id === item.agentId) ?? null;
+    if (relation === 'admin' && modelName === 'user') resolved.admin = store.admin.find(a => a.id === item.adminId) ?? null;
     if (relation === 'designation' && modelName === 'user') resolved.designation = store.designation.find((d: any) => d.id === item.designationId) ?? null;
     if (relation === 'client' && modelName === 'project') resolved.client = store.client.find(c => c.id === item.clientId) ?? null;
-    if (relation === 'agent' && modelName === 'project') resolved.agent = store.agent.find(a => a.id === item.agentId) ?? null;
+    if (relation === 'admin' && modelName === 'project') resolved.admin = store.admin.find(a => a.id === item.adminId) ?? null;
     if (relation === 'leads' && modelName === 'project') resolved.leads = store.lead.filter(l => l.projectId === item.id);
     if (relation === 'assignments' && modelName === 'project') resolved.assignments = store.assignment.filter(a => a.projectId === item.id);
     if (relation === 'uploadedFiles' && modelName === 'project') resolved.uploadedFiles = store.uploadedfile.filter(f => f.projectId === item.id);
@@ -257,7 +257,7 @@ class PrismaClient {
   user = createModel('user');
   role = createModel('role');
   client = createModel('client');
-  agent = createModel('agent');
+  admin = createModel('admin');
   project = createModel('project');
   uploadedFile = createModel('uploadedfile');
   lead = createModel('lead');

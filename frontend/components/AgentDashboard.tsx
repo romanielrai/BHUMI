@@ -95,21 +95,21 @@ export default function AgentDashboard() {
 
     try {
       const user = JSON.parse(userStr);
-      const agentId = user.agentId;
+      const adminId = user.adminId;
 
       const res = await fetch('/api/crm/projects', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
-        // Filter projects assigned to this agent (by agentId or agent email)
-        const agentProjects = (data.projects || []).filter((p: any) => 
-          p.agentId === agentId || p.agent?.email === user.email
+        // Filter projects assigned to this admin (by adminId or admin email)
+        const adminProjects = (data.projects || []).filter((p: any) => 
+          p.adminId === adminId || p.admin?.email === user.email
         );
-        setProjects(agentProjects);
+        setProjects(adminProjects);
 
-        if (agentProjects.length > 0 && (autoSelect || !selectedProjectId)) {
-          const firstProj = agentProjects[0];
+        if (adminProjects.length > 0 && (autoSelect || !selectedProjectId)) {
+          const firstProj = adminProjects[0];
           setSelectedProjectId(firstProj.id);
           fetchLeads(firstProj.id);
         }
@@ -127,7 +127,7 @@ export default function AgentDashboard() {
     if (!token || !projectId) return;
 
     try {
-      const res = await fetch(`/api/crm/agent-leads/${projectId}`, {
+      const res = await fetch(`/api/crm/admin-leads/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -160,7 +160,7 @@ export default function AgentDashboard() {
     if (!token) return;
 
     try {
-      const res = await fetch('/api/crm/agent/daily-planner', {
+      const res = await fetch('/api/crm/admin/daily-planner', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -184,7 +184,7 @@ export default function AgentDashboard() {
     if (!token) return;
 
     try {
-      const res = await fetch('/api/crm/agent/daily-updates', {
+      const res = await fetch('/api/crm/admin/daily-updates', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -246,14 +246,14 @@ export default function AgentDashboard() {
     setEditEmail(lead.email || '');
   };
 
-  // Trigger project agent-work action (START, PAUSE, COMPLETE)
+  // Trigger project admin-work action (START, PAUSE, COMPLETE)
   const handleAgentWorkAction = async (projectId: string, action: 'START' | 'PAUSE' | 'COMPLETE') => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
     setActionStatus(`Sending ${action.toLowerCase()} trigger...`);
     try {
-      const res = await fetch(`/api/crm/projects/${projectId}/agent-work`, {
+      const res = await fetch(`/api/crm/projects/${projectId}/admin-work`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -325,7 +325,7 @@ export default function AgentDashboard() {
     if (isNaN(val) || val <= 0) return;
 
     try {
-      const res = await fetch('/api/crm/agent/daily-planner/target', {
+      const res = await fetch('/api/crm/admin/daily-planner/target', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -357,7 +357,7 @@ export default function AgentDashboard() {
     }
 
     try {
-      const res = await fetch('/api/crm/agent/daily-planner/meeting', {
+      const res = await fetch('/api/crm/admin/daily-planner/meeting', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -381,7 +381,7 @@ export default function AgentDashboard() {
     if (!token) return;
 
     try {
-      const res = await fetch(`/api/crm/agent/daily-planner/meeting/${meetingId}`, {
+      const res = await fetch(`/api/crm/admin/daily-planner/meeting/${meetingId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -402,7 +402,7 @@ export default function AgentDashboard() {
     if (!token) return;
 
     try {
-      const res = await fetch(`/api/crm/agent/daily-planner/meeting/${meetingId}`, {
+      const res = await fetch(`/api/crm/admin/daily-planner/meeting/${meetingId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -424,7 +424,7 @@ export default function AgentDashboard() {
     if (!taskInput.trim()) return;
 
     try {
-      const res = await fetch('/api/crm/agent/daily-planner/task', {
+      const res = await fetch('/api/crm/admin/daily-planner/task', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -446,7 +446,7 @@ export default function AgentDashboard() {
     if (!token) return;
 
     try {
-      const res = await fetch(`/api/crm/agent/daily-planner/task/${taskId}`, {
+      const res = await fetch(`/api/crm/admin/daily-planner/task/${taskId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -467,7 +467,7 @@ export default function AgentDashboard() {
     if (!token) return;
 
     try {
-      const res = await fetch(`/api/crm/agent/daily-planner/task/${taskId}`, {
+      const res = await fetch(`/api/crm/admin/daily-planner/task/${taskId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -487,7 +487,7 @@ export default function AgentDashboard() {
     if (!dailyUpdateInput.trim()) return;
 
     try {
-      const res = await fetch('/api/crm/agent/daily-update', {
+      const res = await fetch('/api/crm/admin/daily-update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
