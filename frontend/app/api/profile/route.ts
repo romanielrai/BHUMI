@@ -1,53 +1,90 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/db';
+import { requireAuth, signToken, json } from '@/lib/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000/api';
+export async function GET(req: NextRequest) {
+  const auth = requireAuth(req);
+  if ('error' in auth) return auth.error;
+  const { user } = auth;
 
-async function handleProxy(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const headers: Record<string, string> = {};
-    if (authHeader) {
-      headers['Authorization'] = authHeader;
-    }
-
-    const method = request.method;
-    let body: any = undefined;
-    if (method !== 'GET' && method !== 'HEAD') {
-      try {
-        body = await request.text();
-        headers['Content-Type'] = 'application/json';
-      } catch {
-        body = undefined;
-      }
-    }
-
-    const response = await fetch(`${API_URL}/auth/profile`, {
-      method,
-      headers,
-      body,
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: { role: true, client: true },
     });
+    if (!dbUser) return json({ error: 'User not found' }, 404);
 
-    const contentType = response.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      const data = await response.json();
-      return NextResponse.json(data, { status: response.status });
-    } else {
-      const data = await response.text();
-      return new NextResponse(data, {
-        status: response.status,
-        headers: { 'Content-Type': contentType || 'text/plain' },
-      });
-    }
-  } catch (error) {
-    console.error('NextJS Profile API Proxy Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to proxy profile request to API server.' },
-      { status: 500 }
-    );
+    return json({
+      user: {
+        id: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name,
+        role: dbUser.role?.name,
+        phone: dbUser.phone || dbUser.client?.contactPhone || '',
+        business: dbUser.client?.companyName || '',
+        agentId: dbUser.agentId || '',
+        clientId: dbUser.clientId || '',
+      },
+    });
+  } catch (err: any) {
+    return json({ error: 'Failed to fetch profile' }, 500);
   }
 }
 
-export {
-  handleProxy as GET,
-  handleProxy as PATCH,
-};
+export async function PATCH(req: NextRequest) {
+  const auth = requireAuth(req);
+  if ('error' in auth) return auth.error;
+  const { user } = auth;
+
+  try {
+    const { name, email, phone, business, password } = await req.json();
+
+    const dbUser = await prisma.user.findUnique({ where: { id: user.id }, include: { client: true } });
+    if (!dbUser) return json({ error: 'User not found' }, 404);
+
+    if (email && email !== dbUser.email) {
+      const exists = await prisma.user.findUnique({ where: { email } });
+      if (exists) return json({ error: 'A user with this email already exists' }, 400);
+    }
+
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (password) updateData.passwordHash = await bcrypt.hash(password, 12);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: updateData,
+      include: { role: true, client: true },
+    });
+
+    if (updatedUser.clientId) {
+      const clientUpdate: any = {};
+      if (business !== undefined) clientUpdate.companyName = business;
+      if (name !== undefined) clientUpdate.contactName = name;
+      if (email !== undefined) clientUpdate.contactEmail = email;
+      if (phone !== undefined) clientUpdate.contactPhone = phone;
+      await prisma.client.update({ where: { id: updatedUser.clientId }, data: clientUpdate });
+    }
+
+    const token = signToken({ id: updatedUser.id, email: updatedUser.email, role: updatedUser.role?.name ?? 'USER' });
+
+    return json({
+      token,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role?.name,
+        phone: updatedUser.phone || updatedUser.client?.contactPhone || phone || '',
+        business: updatedUser.client?.companyName || business || '',
+        agentId: updatedUser.agentId || '',
+        clientId: updatedUser.clientId || '',
+      },
+    });
+  } catch (err: any) {
+    return json({ error: 'Failed to update profile' }, 500);
+  }
+}

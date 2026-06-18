@@ -1,45 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/db';
+import { signToken, json } from '@/lib/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000/api';
-
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    const { email, password } = await req.json();
+    if (!email || !password) {
+      return json({ error: 'Email and password are required' }, 400);
+    }
 
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { role: true, client: true },
     });
 
-    const contentType = response.headers.get('content-type');
+    if (!user) return json({ error: 'Invalid credentials' }, 401);
+    if (user.suspended) return json({ error: 'Your account has been suspended. Contact support.' }, 403);
 
-    if (!response.ok) {
-      let data;
-      try {
-        data = contentType?.includes('application/json') ? await response.json() : { error: 'Login failed' };
-      } catch {
-        data = { error: 'Login failed' };
-      }
-      return NextResponse.json(
-        { error: data.error || 'Login failed' },
-        { status: response.status }
-      );
-    }
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) return json({ error: 'Invalid credentials' }, 401);
 
-    if (!contentType?.includes('application/json')) {
-      return NextResponse.json({ error: 'Invalid response format' }, { status: 500 });
-    }
+    const token = signToken({ id: user.id, email: user.email, role: user.role?.name ?? 'USER' });
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: 200 });
-  } catch (error) {
-    console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Failed to connect to API server. Is the backend running on port 4000?' },
-      { status: 500 }
-    );
+    return json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role?.name,
+        phone: user.phone || user.client?.contactPhone || '',
+        business: user.client?.companyName || '',
+        agentId: user.agentId || '',
+        clientId: user.clientId || '',
+      },
+    });
+  } catch (err: any) {
+    console.error('Login error:', err);
+    return json({ error: 'An error occurred during login' }, 500);
   }
 }
