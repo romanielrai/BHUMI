@@ -27,3 +27,7 @@ temp-openai/
 
 # Local JSON database storage
 backend/prisma/db.json
+
+# SQLite dev database (don't push to git)
+backend/prisma/dev.db
+backend/prisma/dev.db-journal

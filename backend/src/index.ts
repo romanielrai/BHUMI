@@ -31,22 +31,28 @@ app.use(cors({
     
     // Check if origin matches localhost or 127.0.0.1 (any port)
     const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    if (isLocalhost) return callback(null, true);
+
+    // Allow production domains
+    const allowedOrigins = [
+      'https://portal.digihoodstudio.com',
+      'https://www.digihoodstudio.com',
+      'https://digihoodstudio.com',
+    ];
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    // Allow Vercel preview deployments
+    if (/\.vercel\.app$/.test(origin)) return callback(null, true);
     
-    if (isLocalhost) {
+    // Allow any other configured front-end URLs from env
+    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
       return callback(null, true);
     }
     
-    // Allow any other configured front-end URLs
-    if (process.env.FRONTEND_URL && (
-      origin === process.env.FRONTEND_URL ||
-      origin === process.env.FRONTEND_URL.replace('localhost', '127.0.0.1') ||
-      origin === process.env.FRONTEND_URL.replace('127.0.0.1', 'localhost')
-    )) {
-      return callback(null, true);
-    }
-    
-    // Fallback: allow in development mode for extreme reliability
-    return callback(null, true);
+    // In non-production, allow all for dev reliability
+    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+
+    return callback(new Error('CORS: Origin not allowed'));
   },
   credentials: true
 }));

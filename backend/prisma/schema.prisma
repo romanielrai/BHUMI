@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -49,6 +49,7 @@ model Client {
   contactName    String
   contactEmail   String
   contactPhone   String
+  plan           String         @default("GROWTH")
   status         String         @default("ACTIVE")
   userAccounts   User[]
   projects       Project[]
@@ -112,7 +113,7 @@ model Lead {
   company        String
   phone          String
   email          String
-  notes          String?        @db.Text
+  notes          String?
   status         String         @default("NEW") // NEW, CONTACTED, NO_ANSWER, INTERESTED, FOLLOW_UP, CLOSED
   project        Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId      String
@@ -139,7 +140,7 @@ model Notification {
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
   title          String
-  message        String         @db.Text
+  message        String
   channel        String         @default("IN_APP") // IN_APP, EMAIL, SMS, ALL
   read           Boolean        @default(false)
   createdAt      DateTime       @default(now())
@@ -150,7 +151,7 @@ model ActivityLog {
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
   action         String
-  details        String         @db.Text
+  details        String
   ipAddress      String?
   createdAt      DateTime       @default(now())
 }
@@ -158,9 +159,9 @@ model ActivityLog {
 model VoiceTest {
   id             String         @id @default(uuid())
   phone          String
-  scenario       String         @db.Text
+  scenario       String
   voiceType      String
-  transcript     String?        @db.Text
+  transcript     String?
   audioUrl       String?
   createdAt      DateTime       @default(now())
 }
@@ -169,7 +170,7 @@ model CallTranscript {
   id             String         @id @default(uuid())
   callId         String
   role           String
-  message        String         @db.Text
+  message        String
   createdAt      DateTime       @default(now())
 }
 
@@ -179,8 +180,8 @@ model ChatbotLog {
   userId         String?
   sessionId      String
   role           String
-  message        String         @db.Text
-  metadata       String?        @db.Text
+  message        String
+  metadata       String?
   createdAt      DateTime       @default(now())
 }
 
@@ -191,7 +192,7 @@ model AuditLog {
   action         String
   actor          String?
   target         String?
-  details        String?        @db.Text
+  details        String?
   ipAddress      String?
   createdAt      DateTime       @default(now())
 }

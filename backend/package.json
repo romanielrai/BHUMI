@@ -5,10 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "npx prisma generate && tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "start-prod": "node dist/index.js",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "postinstall": "npx prisma generate"
   },
   "prisma": {
     "seed": "ts-node-dev --transpile-only prisma/seed.ts"
